@@ -8,13 +8,11 @@ using Unity.Properties;
 using Random = UnityEngine.Random;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "Set Destination", story: "Sets the [destination] based on [self] and [collection]", category: "Action", id: "213ebe4a68548c0bb3070e02d354f57f")]
+[NodeDescription(name: "Set Destination", story: "Sets the [destination] based on [self]", category: "Action", id: "213ebe4a68548c0bb3070e02d354f57f")]
 public partial class SetDestinationAction : Action
 {
     [SerializeReference] public BlackboardVariable<GameObject> Destination;
     [SerializeReference] public BlackboardVariable<GameObject> Self;
-    [SerializeReference] public BlackboardVariable<List<GameObject>> Collection;
-
     private const float NearbyDistance = 20f;
     private const float SeparationDistance = 4f;
     
@@ -32,11 +30,6 @@ public partial class SetDestinationAction : Action
         }
         
         if (Self.Value == null)
-        {
-            return Status.Failure;
-        }
-
-        if (Collection.Value == null)
         {
             return Status.Failure;
         }
