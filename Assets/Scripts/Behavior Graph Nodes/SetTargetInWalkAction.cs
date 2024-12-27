@@ -3,6 +3,7 @@ using Unity.Behavior;
 using UnityEngine;
 using Action = Unity.Behavior.Action;
 using Unity.Properties;
+using UtilityToolkit.Runtime;
 
 [Serializable, GeneratePropertyBag]
 [NodeDescription(name: "Set Target in Walk", story: "Set [Target] in [Walk]", category: "Action", id: "c9d49f80a9cf16b23567d4a5ffc11a20")]
@@ -23,7 +24,7 @@ public partial class SetTargetInWalkAction : Action
             return Status.Failure;
         }
         
-        Walk.Value.SetTarget(Target.Value.transform);
+        Walk.Value.Target = Option<Transform>.Some(Target.Value.transform);
         
         return Status.Success;
     }

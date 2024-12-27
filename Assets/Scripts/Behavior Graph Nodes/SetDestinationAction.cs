@@ -36,7 +36,7 @@ public partial class SetDestinationAction : Action
         
         if (!_hasSetDestination)
         {
-            Destination.Value.transform.position = Self.Value.transform.position + Utility.UnitCirclePosition();
+            Destination.Value.transform.position = Self.Value.transform.position + Utility.RandomOnCircle(radius: 5f);
             _hasSetDestination = true;
         }
         
@@ -47,7 +47,7 @@ public partial class SetDestinationAction : Action
 
     protected override Status OnUpdate()
     {
-        Destination.Value.transform.position += Utility.UnitCirclePosition();
+        Destination.Value.transform.position += Utility.RandomOnCircle(radius: 5f);
 
         // Vector3 selfPosition = Self.Value.transform.position;
         // var nearbyAgents = Collection.Value

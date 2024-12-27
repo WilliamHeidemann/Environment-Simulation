@@ -5,7 +5,7 @@ public class Walk : MonoBehaviour
 {
     [SerializeField] private float RotationSpeed;
     [SerializeField] private float TranslationSpeed;
-    private Option<Transform> _target;
+    public Option<Transform> Target { get; set; }
 
     public bool ShouldWalk { get; set; }
     
@@ -17,18 +17,13 @@ public class Walk : MonoBehaviour
             return;
         }
         
-        if (!_target.IsSome(out Transform target))
+        if (!Target.IsSome(out Transform target))
         {
             return;
         }
 
         Rotate(target);
         Translate(target);
-    }
-    
-    public void SetTarget(Transform target)
-    {
-        _target = Option<Transform>.Some(target);
     }
 
     private void Rotate(Transform target)

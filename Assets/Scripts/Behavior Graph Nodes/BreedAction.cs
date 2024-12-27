@@ -24,7 +24,7 @@ public partial class BreedAction : Action
             return Status.Failure;
         }
         
-        Vector3 spawnPosition = Self.Value.transform.position + Utility.UnitCirclePosition();
+        Vector3 spawnPosition = Self.Value.transform.position + Utility.RandomOnCircle(radius: 5f);
         Vector3 lookDirection = spawnPosition - Self.Value.transform.position;
         Quaternion spawnRotation = Quaternion.LookRotation(lookDirection, Vector3.up);
         

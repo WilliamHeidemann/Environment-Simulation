@@ -20,7 +20,7 @@ public partial class SpawnGrassPatchAction : Action
             return Status.Failure;
         }
 
-        _lastSpawnPosition += Utility.UnitCirclePosition();
+        _lastSpawnPosition += Utility.RandomOnCircle(radius: 5f);
         Object.Instantiate(Grass.Value, _lastSpawnPosition, Quaternion.identity);
         
         return Status.Success;

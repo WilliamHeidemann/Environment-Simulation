@@ -68,6 +68,63 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: m_Graph
+      value: 
+      objectReference: {fileID: 1813393710116286631, guid: 76953c67dc0e24f479126c9545b3da73, type: 2}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: 'managedReferences[5477355119342518680]'
+      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[UnityEngine.GameObject,
+        UnityEngine.CoreModule]]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: 'managedReferences[5477355196292006142]'
+      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[Walk, Assembly-CSharp]]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355119342518680].Name
+      value: Self
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355196292006142].Name
+      value: Walk
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: m_BlackboardVariableOverridesList.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355119342518680].m_Value
+      value: 
+      objectReference: {fileID: 1105705119757839783}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355196292006142].m_Value
+      value: 
+      objectReference: {fileID: 5394435923424208982}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[0]'
+      value: 5477355119342518680
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[1]'
+      value: 5477355196292006142
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355119342518680].GUID.m_Value0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355119342518680].GUID.m_Value1
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355196292006142].GUID.m_Value0
+      value: 734616446899659044
+      objectReference: {fileID: 0}
+    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+      propertyPath: managedReferences[5477355196292006142].GUID.m_Value1
+      value: 11335154670244103475
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -91,5 +148,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b3140e57aeb95849a08903d3d6b21de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5394435923424208982 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -241233737542067083, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+  m_PrefabInstance: {fileID: 3925474032710415395}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105705119757839783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f42043afaab7b1b4781853039a8e2578, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
