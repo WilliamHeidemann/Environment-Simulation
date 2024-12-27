@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UtilityToolkit.Runtime;
 
@@ -5,45 +6,44 @@ public class Walk : MonoBehaviour
 {
     [SerializeField] private float RotationSpeed;
     [SerializeField] private float TranslationSpeed;
-    public Option<Transform> Target { get; set; }
-
-    public bool ShouldWalk { get; set; }
-    
+    public Option<Vector3> Target { get; set; }
+    public event Action OnTargetReached;
     
     private void Update()
     {
-        if (!ShouldWalk)
-        {
-            return;
-        }
-        
-        if (!Target.IsSome(out Transform target))
+        if (!Target.IsSome(out Vector3 target))
         {
             return;
         }
 
         Rotate(target);
         Translate(target);
+        
+        if (Vector3.SqrMagnitude(transform.position - target) < 0.1f)
+        {
+            Target = Option<Vector3>.None;
+            OnTargetReached?.Invoke();
+        }
     }
 
-    private void Rotate(Transform target)
+    private void Rotate(Vector3 target)
     {
         float angle = Quaternion.Angle(
             transform.rotation,
-            Quaternion.LookRotation(target.transform.position - transform.position));
+            Quaternion.LookRotation(transform.position - target));
 
         if (angle > 0.1f)
         {
             transform.rotation = Quaternion.RotateTowards(
                 transform.rotation,
-                Quaternion.LookRotation(target.transform.position - transform.position),
+                Quaternion.LookRotation(transform.position - target),
                 RotationSpeed * Time.deltaTime);
         }
     }
 
-    private void Translate(Transform target)
+    private void Translate(Vector3 target)
     {
-        Vector3 direction = (target.transform.position - transform.position).normalized;
+        Vector3 direction = (target - transform.position).normalized;
         float squareDistance = direction.sqrMagnitude;
 
         if (squareDistance > 0.1f)

@@ -8,19 +8,18 @@ using Unity.Properties;
 using Object = UnityEngine.Object;
 
 [Serializable, GeneratePropertyBag]
-[NodeDescription(name: "Eat Grass", story: "Eat [Grass]", category: "Action", id: "f4fadf06b512ac354da63c25089848c4")]
+[NodeDescription(name: "Eat Grass", story: "[Self] Eat Grass", category: "Action", id: "f4fadf06b512ac354da63c25089848c4")]
 public partial class EatGrassAction : Action
 {
-    [SerializeReference] public BlackboardVariable<GameObject> Grass;
-
+    [SerializeReference] public BlackboardVariable<Sheep> Self;
     protected override Status OnStart()
     {
-        if (Grass.Value == null)
+        if (Self.Value == null)
         {
             return Status.Failure;
         }
-        
-        Object.Destroy(Grass.Value);
+
+        Self.Value.EatGrass();
         
         return Status.Success;
     }

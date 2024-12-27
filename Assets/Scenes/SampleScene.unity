@@ -661,63 +661,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: 'managedReferences[5477355222336274566]'
-      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[UnityEngine.GameObject,
-        UnityEngine.CoreModule]]'
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: 'managedReferences[5477355222336274577]'
-      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[Sheep, Assembly-CSharp]]'
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274566].Name
-      value: Self
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274577].Name
-      value: SelfSheep
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_BlackboardVariableOverridesList.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274566].m_Value
-      value: 
-      objectReference: {fileID: 2074254215}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274577].m_Value
-      value: 
-      objectReference: {fileID: 2074254216}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[0]'
-      value: 5477355222336274566
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[1]'
-      value: 5477355222336274577
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274566].GUID.m_Value0
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274566].GUID.m_Value1
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274577].GUID.m_Value0
-      value: 13076112114266510496
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: managedReferences[5477355222336274577].GUID.m_Value1
-      value: 15139769351537312246
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -892,22 +835,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2074254215 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-  m_PrefabInstance: {fileID: 892547937}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &2074254216 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -7863354055823278981, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-  m_PrefabInstance: {fileID: 892547937}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074254215}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 69e72bdd256a3a04d8e24ed21e5b8884, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &3295350877836501963
 PrefabInstance:
   m_ObjectHideFlags: 0

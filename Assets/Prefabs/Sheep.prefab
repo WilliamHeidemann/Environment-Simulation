@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Graph: {fileID: -2113612482618141763, guid: b0414a9b30c36cb4eb32e538d5f82ec5, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 5477355233046430005
+  - rid: 5477355240178057395
   m_IsInitialised: 0
   m_IsStarted: 0
   references:
@@ -166,6 +167,14 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 4116946635761015172}
+    - rid: 5477355240178057395
+      type: {class: 'BlackboardVariable`1[[Sheep, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 9082737493415088441
+          m_Value1: 15700868578972300727
+        Name: Sheep
+        m_Value: {fileID: -7863354055823278981}
 --- !u!114 &-241233737542067083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,7 +187,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f42043afaab7b1b4781853039a8e2578, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RotationSpeed: 100
+  RotationSpeed: 200
   TranslationSpeed: 2
 --- !u!114 &-7863354055823278981
 MonoBehaviour:
@@ -577,7 +586,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: b692eb3dcd0927e478c684dd6baae86b, type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 2147483647
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6745302439343835087, guid: b692eb3dcd0927e478c684dd6baae86b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
