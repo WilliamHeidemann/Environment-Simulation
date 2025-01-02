@@ -8,7 +8,7 @@ public class AgentRenderer : MonoBehaviour
     [SerializeField] private GameObject _agentPrefab;
 
     private readonly List<SubMesh> _subMeshes = new();
-    private Dictionary<Mesh, Matrix4x4[]> _instanceMatrices = new();
+    private readonly Dictionary<Mesh, Matrix4x4[]> _instanceMatrices = new();
 
     private struct SubMesh
     {

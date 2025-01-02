@@ -672,11 +672,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 442787259372768986, guid: 83e5870909692814d825b3693d1f7712, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 442787259372768986, guid: 83e5870909692814d825b3693d1f7712, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
       propertyPath: m_Name
@@ -684,7 +684,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4848633017657327934, guid: 83e5870909692814d825b3693d1f7712, type: 3}
       propertyPath: m_AnchorMax.y
@@ -875,7 +875,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
-  _agentPrefab: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
+  _agentPrefab: {fileID: 2654605188707293547, guid: 5ca0af98eba42cd49a609f9eeeaaff2c, type: 3}
 --- !u!1 &1955650318
 GameObject:
   m_ObjectHideFlags: 0

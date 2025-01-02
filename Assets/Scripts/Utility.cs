@@ -10,4 +10,9 @@ public static class Utility
         Vector3 unitCirclePosition = new Vector3(x, 0, z) * radius;
         return unitCirclePosition;
     }
+
+    public static Vector3 RandomInCircle(float radius = 1f)
+    {
+        return RandomOnCircle(Random.Range(0f, radius));
+    }
 }

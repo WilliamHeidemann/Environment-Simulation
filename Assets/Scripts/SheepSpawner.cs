@@ -9,11 +9,11 @@ public class SheepSpawner : MonoBehaviour
     private void Start()
     {
         _agentsData.Agents = new List<Agent>();
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 10000; i++)
         {
             _agentsData.Agents.Add(new Agent()
             {
-                Position = Utility.RandomOnCircle(20f),
+                Position = Utility.RandomInCircle(20f),
                 Rotation = Quaternion.identity,
                 TargetPosition = Option<Vector3>.None,
                 StartIdleTime = Time.time

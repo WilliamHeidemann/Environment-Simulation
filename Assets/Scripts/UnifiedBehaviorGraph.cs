@@ -18,7 +18,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
                     agent.StartIdleTime = Time.time;
                 }
             }
-            else if (Time.time - agent.StartIdleTime > 3f)
+            else if (Time.time - agent.StartIdleTime > 0f)
             {
                 Vector3 position = agent.Position + Utility.RandomOnCircle(5f);
                 agent.TargetPosition = Option<Vector3>.Some(position);
