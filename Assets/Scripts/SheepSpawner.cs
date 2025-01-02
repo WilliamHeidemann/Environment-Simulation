@@ -5,7 +5,7 @@ using UtilityToolkit.Runtime;
 public class SheepSpawner : MonoBehaviour
 {
     [SerializeField] private AgentsData _agentsData;
-    
+    [SerializeField] private AgentRenderer _agentRenderer;
     private void Start()
     {
         _agentsData.Agents = new List<Agent>();
@@ -19,5 +19,7 @@ public class SheepSpawner : MonoBehaviour
                 StartIdleTime = Time.time
             });            
         }
+        
+        _agentRenderer.GatherMeshesAndMaterials();
     }
 }
