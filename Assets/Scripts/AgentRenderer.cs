@@ -8,7 +8,7 @@ public class AgentRenderer : MonoBehaviour
     [SerializeField] private GameObject _agentPrefab;
 
     private readonly List<SubMesh> _subMeshes = new();
-    private readonly Dictionary<Mesh, Matrix4x4[]> _instanceMatrices = new();
+    private readonly Dictionary<SubMesh, Matrix4x4[]> _instanceMatrices = new();
 
     private struct SubMesh
     {
@@ -42,7 +42,7 @@ public class AgentRenderer : MonoBehaviour
             };
             
             _subMeshes.Add(subMesh);
-            _instanceMatrices[subMesh.Mesh] = new Matrix4x4[_agentsData.Agents.Count];
+            _instanceMatrices[subMesh] = new Matrix4x4[_agentsData.Agents.Count];
         }
     }
 
@@ -50,10 +50,11 @@ public class AgentRenderer : MonoBehaviour
     {
         foreach (SubMesh subMesh in _subMeshes)
         {
-            var matrices = _instanceMatrices[subMesh.Mesh];
+            Matrix4x4[] matrices = _instanceMatrices[subMesh];
             for (var i = 0; i < matrices.Length; i++)
             {
-                Vector3 position = _agentsData.Agents[i].Position + subMesh.Position;
+                Vector3 rotatedPosition = _agentsData.Agents[i].Rotation * subMesh.Position;
+                Vector3 position = _agentsData.Agents[i].Position + rotatedPosition;
                 Quaternion rotation = _agentsData.Agents[i].Rotation * subMesh.Rotation;
                 Vector3 scale = subMesh.Scale;
                 matrices[i] = Matrix4x4.TRS(position, rotation, scale);
@@ -72,8 +73,8 @@ public class AgentRenderer : MonoBehaviour
                     rparams: new RenderParams(subMesh.Materials[i]),
                     mesh: subMesh.Mesh,
                     submeshIndex: i,
-                    instanceData: _instanceMatrices[subMesh.Mesh],
-                    instanceCount: _instanceMatrices[subMesh.Mesh].Length
+                    instanceData: _instanceMatrices[subMesh],
+                    instanceCount: _instanceMatrices[subMesh].Length
                 );
             }
         }

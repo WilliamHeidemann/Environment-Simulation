@@ -26,7 +26,7 @@ public class AgentTranslator : MonoBehaviour
             agentRotations[i] = agents[i].Rotation;
             haveTargetPositions[i] = agents[i].TargetPosition.IsSome(out _);
         }
-        
+
         var job = new TranslateJob
         {
             TargetPositions = targetPositions,
@@ -35,15 +35,15 @@ public class AgentTranslator : MonoBehaviour
             HaveTargetPositions = haveTargetPositions,
             DeltaTime = Time.deltaTime
         };
-        
+
         job.Schedule(agents.Count, 1).Complete();
-        
+
         for (int i = 0; i < agents.Count; i++)
         {
             agents[i].Position = agentPositions[i];
             agents[i].Rotation = agentRotations[i];
         }
-        
+
         targetPositions.Dispose();
         agentPositions.Dispose();
         agentRotations.Dispose();
@@ -66,35 +66,33 @@ public struct TranslateJob : IJobParallelFor
     [ReadOnly] public float DeltaTime;
     public NativeArray<Vector3> AgentPositions;
     public NativeArray<Quaternion> AgentRotations;
-    
+
     private const float RotationSpeed = 200f;
     private const float TranslationSpeed = 2f;
-    
+
     public void Execute(int index)
     {
         if (!HaveTargetPositions[index])
         {
             return;
         }
+
         Rotate(index);
         Translate(index);
     }
-    
+
     private void Rotate(int index)
     {
-        float angle = Quaternion.Angle(
-            AgentRotations[index],
-            Quaternion.LookRotation(AgentPositions[index] - TargetPositions[index]));
+        Quaternion destinationRotation = Quaternion.LookRotation(TargetPositions[index] - AgentPositions[index]);
+        float angle = Quaternion.Angle(AgentRotations[index], destinationRotation);
 
         if (angle > 1f)
         {
-            AgentRotations[index] = Quaternion.RotateTowards(
-                AgentRotations[index],
-                Quaternion.LookRotation(AgentPositions[index] - TargetPositions[index]),
-                RotationSpeed * DeltaTime);
+            AgentRotations[index] =
+                Quaternion.RotateTowards(AgentRotations[index], destinationRotation, RotationSpeed * DeltaTime);
         }
     }
-    
+
     private void Translate(int index)
     {
         Vector3 direction = TargetPositions[index] - AgentPositions[index];

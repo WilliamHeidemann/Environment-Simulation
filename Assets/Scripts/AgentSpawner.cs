@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UtilityToolkit.Runtime;
 
-public class SheepSpawner : MonoBehaviour
+public class AgentSpawner : MonoBehaviour
 {
     [SerializeField] private AgentsData _agentsData;
     [SerializeField] private AgentRenderer _agentRenderer;
