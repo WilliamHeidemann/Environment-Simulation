@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UtilityToolkit.Runtime;
+using Random = UnityEngine.Random;
 
 public class UnifiedBehaviorGraph : MonoBehaviour
 {
@@ -9,8 +10,8 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     public void Update()
     {
-        const float closeDistance = 10f;
-        const float tooCloseDistance = 1f;
+        const float closeDistance = 25f;
+        const float tooCloseDistance = 2f;
 
         for (int i = 0; i < AgentsData.Agents.Count; i++)
         {
@@ -60,46 +61,68 @@ public class UnifiedBehaviorGraph : MonoBehaviour
                     AgentsData.ProximityGraph.TooClose[agent].Remove(edge1);
                     AgentsData.ProximityGraph.TooClose[other].Remove(edge2);
                 }
-
             }
         }
 
         foreach (Agent agent in AgentsData.Agents)
         {
-            int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
-            if (cohesionCount == 0)
+            switch (agent.Behavior)
             {
-                continue;
+                case Behavior.Wandering:
+                    UpdateWanderingTarget(agent);
+                    break;
+                case Behavior.Flocking:
+                    UpdateFlockingTarget(agent);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            Vector3 cohesion = Vector3.zero;
-            foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
-            {
-                cohesion += edge.EndPosition;
-            }
-
-            cohesion /= cohesionCount;
-            cohesion -= agent.Position;
-
-            Vector3 separation = Vector3.zero;
-            foreach (Edge edge in AgentsData.ProximityGraph.TooClose[agent])
-            {
-                separation += (edge.SeparationVector.normalized / edge.SquareDistance) * 5f;
-            }
-
-            Vector3 acceleration = cohesion + separation;
-
-            if (cohesion.sqrMagnitude < 2f)
-            {
-                acceleration = Vector3.zero;
-            }
-            else if (cohesion.sqrMagnitude < 4f)
-            {
-                acceleration = agent.Rotation * Vector3.forward;
-            }
-
-            agent.TargetPosition = agent.Position + acceleration;
         }
+    }
+
+    private void UpdateWanderingTarget(Agent agent)
+    {
+        if (Vector3.SqrMagnitude(agent.TargetPosition - agent.Position) < 1f)
+        {
+            agent.TargetPosition = Utility.RandomOnCircle(10);
+        }
+    }
+
+    private void UpdateFlockingTarget(Agent agent)
+    {
+        int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
+        if (cohesionCount == 0)
+        {
+            return;
+        }
+
+        Vector3 cohesion = Vector3.zero;
+        foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
+        {
+            cohesion += edge.EndPosition;
+        }
+
+        cohesion /= cohesionCount;
+        cohesion -= agent.Position;
+
+        Vector3 separation = Vector3.zero;
+        foreach (Edge edge in AgentsData.ProximityGraph.TooClose[agent])
+        {
+            separation += (edge.SeparationVector.normalized / edge.SquareDistance) * 5f;
+        }
+
+        Vector3 acceleration = cohesion + separation;
+
+        if (cohesion.sqrMagnitude < 2f)
+        {
+            acceleration = Vector3.zero;
+        }
+        else if (cohesion.sqrMagnitude < 4f)
+        {
+            acceleration = agent.Rotation * Vector3.forward;
+        }
+
+        agent.TargetPosition = agent.Position + acceleration;
     }
 
     private void OnDrawGizmos()

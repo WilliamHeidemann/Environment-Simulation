@@ -55,8 +55,11 @@ public class AgentRenderer : MonoBehaviour
             {
                 Vector3 rotatedPosition = _agentsData.Agents[i].Rotation * subMesh.Position;
                 Vector3 position = _agentsData.Agents[i].Position + rotatedPosition;
+                
                 Quaternion rotation = _agentsData.Agents[i].Rotation * subMesh.Rotation;
+
                 Vector3 scale = subMesh.Scale;
+                scale.Scale(_agentsData.Agents[i].Scale);
                 matrices[i] = Matrix4x4.TRS(position, rotation, scale);
             }
         }

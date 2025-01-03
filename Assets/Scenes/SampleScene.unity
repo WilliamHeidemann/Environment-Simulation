@@ -654,91 +654,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &892547937
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -7863354055823278981, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -241233737542067083, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 442787259372768986, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 442787259372768986, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_Name
-      value: Sheep
-      objectReference: {fileID: 0}
-    - target: {fileID: 4116946635761015172, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848633017657327934, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -1.3476877
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -7.4147987
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6055690304612794058, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7152549713477862438, guid: 83e5870909692814d825b3693d1f7712, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 83e5870909692814d825b3693d1f7712, type: 3}
 --- !u!1 &1167020200
 GameObject:
   m_ObjectHideFlags: 0
@@ -862,6 +777,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentRenderer: {fileID: 1395441409}
+  _spawnCount: 800
+  _spawnRadius: 20
 --- !u!114 &1395441409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1059,7 +976,6 @@ SceneRoots:
   - {fileID: 179869187}
   - {fileID: 288025776}
   - {fileID: 358596549}
-  - {fileID: 892547937}
   - {fileID: 695298790}
   - {fileID: 1195986865}
   - {fileID: 1395441407}
