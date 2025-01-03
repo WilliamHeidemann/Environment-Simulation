@@ -12,11 +12,11 @@ public class AgentSpawner : MonoBehaviour
         _agentsData.Agents = new List<Agent>();
         _agentsData.ProximityGraph = new ProximityGraph();
         Random.InitState(0);
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 80; i++)
         {
             var agent = new Agent
             {
-                Position = Utility.RandomInCircle(5f),
+                Position = Utility.RandomInCircle(30f),
                 Rotation = Quaternion.identity,
                 TargetPosition = Vector3.zero,
                 StartIdleTime = Time.time,

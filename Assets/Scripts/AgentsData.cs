@@ -15,39 +15,35 @@ public class ProximityGraph
     public readonly Dictionary<Agent, HashSet<Edge>> TooClose = new();
 }
 
-public class Edge : IEquatable<Edge>
+public struct Edge : IEquatable<Edge>
 {
-    public Agent Other;
     public float SquareDistance;
     public Vector3 SeparationVector;
+    public Vector3 EndPosition;
+    public int Index;
 
     public bool Equals(Edge other)
     {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return Equals(Other, other.Other);
+        return Index == other.Index;
     }
 
     public override bool Equals(object obj)
     {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != this.GetType()) return false;
-        return Equals((Edge)obj);
+        return obj is Edge other && Equals(other);
     }
 
     public override int GetHashCode()
     {
-        return (Other != null ? Other.GetHashCode() : 0);
+        return Index;
     }
 
     public static bool operator ==(Edge left, Edge right)
     {
-        return Equals(left, right);
+        return left.Equals(right);
     }
 
     public static bool operator !=(Edge left, Edge right)
     {
-        return !Equals(left, right);
+        return !left.Equals(right);
     }
 }

@@ -49,8 +49,8 @@ public struct TranslateJob : IJobParallelFor
     public NativeArray<Vector3> AgentPositions;
     public NativeArray<Quaternion> AgentRotations;
 
-    private const float RotationSpeed = 200f;
-    private const float TranslationSpeed = 2f;
+    private const float RotationSpeed = 150f;
+    private const float TranslationSpeed = 0.15f;
 
     public void Execute(int index)
     {
@@ -78,7 +78,7 @@ public struct TranslateJob : IJobParallelFor
 
     private void Translate(int index, Vector3 direction)
     {
-        Vector3 distanceToMove = direction.normalized * (TranslationSpeed * DeltaTime);
+        Vector3 distanceToMove = direction * (TranslationSpeed * DeltaTime);
         AgentPositions[index] += distanceToMove;
     }
 }

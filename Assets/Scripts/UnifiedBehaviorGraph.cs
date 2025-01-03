@@ -9,8 +9,8 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     public void Update()
     {
-        const float closeDistance = 5f;
-        const float tooCloseDistance = 2f;
+        const float closeDistance = 10f;
+        const float tooCloseDistance = 1f;
 
         for (int i = 0; i < AgentsData.Agents.Count; i++)
         {
@@ -25,16 +25,18 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
                 Edge edge1 = new()
                 {
-                    Other = other,
                     SquareDistance = squareDistance,
-                    SeparationVector = separationVector
+                    SeparationVector = separationVector,
+                    EndPosition = other.Position,
+                    Index = other.Index
                 };
-                
+
                 Edge edge2 = new()
                 {
-                    Other = agent,
                     SquareDistance = squareDistance,
-                    SeparationVector = other.Position - agent.Position
+                    SeparationVector = other.Position - agent.Position,
+                    EndPosition = agent.Position,
+                    Index = agent.Index
                 };
 
                 if (squareDistance < closeDistance)
@@ -58,37 +60,45 @@ public class UnifiedBehaviorGraph : MonoBehaviour
                     AgentsData.ProximityGraph.TooClose[agent].Remove(edge1);
                     AgentsData.ProximityGraph.TooClose[other].Remove(edge2);
                 }
+
             }
         }
 
         foreach (Agent agent in AgentsData.Agents)
         {
-            Vector3 acceleration = Vector3.zero;
-            
+            int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
+            if (cohesionCount == 0)
+            {
+                continue;
+            }
+
             Vector3 cohesion = Vector3.zero;
             foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
             {
-                cohesion += edge.Other.Position;
+                cohesion += edge.EndPosition;
             }
-            
-            int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
-            if (cohesionCount == 0) continue;
+
             cohesion /= cohesionCount;
             cohesion -= agent.Position;
-            
+
             Vector3 separation = Vector3.zero;
             foreach (Edge edge in AgentsData.ProximityGraph.TooClose[agent])
             {
-                separation += edge.SeparationVector / edge.SquareDistance;
+                separation += (edge.SeparationVector.normalized / edge.SquareDistance) * 5f;
             }
-            
-            acceleration += cohesion;
-            acceleration += separation * 3f;
-            
-            agent.TargetPosition += acceleration;
-            // Vector3 offsetTargetPosition = agent.TargetPosition - agent.Position;
-            // offsetTargetPosition = Vector3.ClampMagnitude(offsetTargetPosition, 20f);
-            // agent.TargetPosition = agent.Position + offsetTargetPosition;
+
+            Vector3 acceleration = cohesion + separation;
+
+            if (cohesion.sqrMagnitude < 2f)
+            {
+                acceleration = Vector3.zero;
+            }
+            else if (cohesion.sqrMagnitude < 4f)
+            {
+                acceleration = agent.Rotation * Vector3.forward;
+            }
+
+            agent.TargetPosition = agent.Position + acceleration;
         }
     }
 
@@ -98,6 +108,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         Gizmos.color = Color.red;
         foreach (Agent agent in AgentsData.Agents)
         {
+            Gizmos.DrawLine(agent.Position, agent.TargetPosition);
             Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
         }
     }
