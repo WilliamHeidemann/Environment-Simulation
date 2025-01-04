@@ -1,9 +1,11 @@
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace Jobs
 {
+    [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
     public struct ConstructGraphJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<Vector3> AgentPositions;

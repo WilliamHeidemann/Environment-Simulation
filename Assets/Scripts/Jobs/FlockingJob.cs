@@ -1,9 +1,11 @@
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace Jobs
 {
+    [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
     public struct FlockingJob : IJob
     {
         public NativeArray<Vector3> Acceleration;
@@ -61,7 +63,8 @@ namespace Jobs
 
             separation *= SeparationStrength;
 
-            Acceleration[0] = alignment + cohesion + separation;
+            Vector3 acceleration = alignment + cohesion + separation;
+            Acceleration[0] = acceleration;
         }
     }
 }
