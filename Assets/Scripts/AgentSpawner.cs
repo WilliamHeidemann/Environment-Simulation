@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UtilityToolkit.Runtime;
+using Random = UnityEngine.Random;
 
 public class AgentSpawner : MonoBehaviour
 {
@@ -32,8 +34,8 @@ public class AgentSpawner : MonoBehaviour
             };
             
             _agentsData.Agents.Add(agent);
-            _agentsData.ProximityGraph.Close.Add(agent, new HashSet<Edge>());
-            _agentsData.ProximityGraph.TooClose.Add(agent, new HashSet<Edge>());
+            _agentsData.ProximityGraph.Close.Add(agent, Array.Empty<Edge>());
+            _agentsData.ProximityGraph.TooClose.Add(agent, Array.Empty<Edge>());
         }
 
         _agentRenderer.GatherMeshesAndMaterials();

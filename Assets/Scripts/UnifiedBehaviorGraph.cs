@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -17,62 +18,6 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     public void Update()
     {
-        #region OldGraphConstruction
-        // const float closeDistance = 25f;
-        // const float tooCloseDistance = 2f;
-        //
-        // for (int i = 0; i < AgentsData.Agents.Count; i++)
-        // {
-        //     for (int j = i + 1; j < AgentsData.Agents.Count; j++)
-        //     {
-        //         Agent agent = AgentsData.Agents[i];
-        //         Agent other = AgentsData.Agents[j];
-        //         if (agent == other) continue;
-        //
-        //         Vector3 separationVector = agent.Position - other.Position;
-        //         float squareDistance = separationVector.sqrMagnitude;
-        //
-        //         Edge edge1 = new()
-        //         {
-        //             SquareDistance = squareDistance,
-        //             SeparationVector = separationVector,
-        //             EndPosition = other.Position,
-        //             Index = other.Index
-        //         };
-        //
-        //         Edge edge2 = new()
-        //         {
-        //             SquareDistance = squareDistance,
-        //             SeparationVector = other.Position - agent.Position,
-        //             EndPosition = agent.Position,
-        //             Index = agent.Index
-        //         };
-        //
-        //         if (squareDistance < closeDistance)
-        //         {
-        //             AgentsData.ProximityGraph.Close[agent].Add(edge1);
-        //             AgentsData.ProximityGraph.Close[other].Add(edge2);
-        //         }
-        //         else
-        //         {
-        //             AgentsData.ProximityGraph.Close[agent].Remove(edge1);
-        //             AgentsData.ProximityGraph.Close[other].Remove(edge2);
-        //         }
-        //
-        //         if (squareDistance < tooCloseDistance)
-        //         {
-        //             AgentsData.ProximityGraph.TooClose[agent].Add(edge1);
-        //             AgentsData.ProximityGraph.TooClose[other].Add(edge2);
-        //         }
-        //         else
-        //         {
-        //             AgentsData.ProximityGraph.TooClose[agent].Remove(edge1);
-        //             AgentsData.ProximityGraph.TooClose[other].Remove(edge2);
-        //         }
-        //     }
-        // }
-        #endregion
-
         int agentCount = AgentsData.Agents.Count;
         var agentPositions = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
         var agentForwards = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
@@ -82,14 +27,16 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             agentForwards[i] = AgentsData.Agents[i].Rotation * Vector3.forward;
         }
 
-        var jobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
-        var jobs = new ConstructGraphJob[agentCount];
+        var graphJobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
+        var graphJobs = new ConstructGraphJob[agentCount];
+        var flockingJobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
+        var flockingJobs = new FlockingJob[agentCount];
 
         for (int i = 0; i < agentCount; i++)
         {
             var close = new NativeArray<Edge>(agentCount, Allocator.TempJob);
             var tooClose = new NativeArray<Edge>(agentCount, Allocator.TempJob);
-            var constructGraphJob = new ConstructGraphJob
+            var graphJob = new ConstructGraphJob
             {
                 AgentPositions = agentPositions,
                 AgentForwards = agentForwards,
@@ -97,113 +44,51 @@ public class UnifiedBehaviorGraph : MonoBehaviour
                 TooClose = tooClose,
                 AgentIndex = i
             };
-            jobs[i] = constructGraphJob;
-            JobHandle job = constructGraphJob.Schedule(agentCount, 128);
-            jobHandles[i] = job;
+            graphJobs[i] = graphJob;
+            JobHandle graphJobHandle = graphJob.Schedule(agentCount, 128);
+            graphJobHandles[i] = graphJobHandle;
+            
+            Agent agent = AgentsData.Agents[i];
+            var acceleration = new NativeArray<Vector3>(1, Allocator.TempJob);
+            var speed = new NativeArray<float>(1, Allocator.TempJob);
+            var flockingJob = new FlockingJob
+            {
+                Acceleration = acceleration,
+                Speed = speed,
+                Position = agent.Position,
+                Close = close,
+                TooClose = tooClose,
+                CohesionStrength = CohesionStrength,
+                AlignmentStrength = AlignmentStrength,
+                SeparationStrength = SeparationStrength
+            };
+            flockingJobs[i] = flockingJob;
+            JobHandle flockingJobHandle = flockingJob.Schedule(graphJobHandle);
+            flockingJobHandles[i] = flockingJobHandle;
         }
 
-        JobHandle.CompleteAll(jobHandles);
-        
-        for (int i = 0; i < agentCount; i++)
-        {
-            ConstructGraphJob job = jobs[i];
-            var close = job.Close.Where(edge => edge != default).ToHashSet();
-            var tooClose = job.TooClose.Where(edge => edge != default).ToHashSet();
-            AgentsData.ProximityGraph.Close[AgentsData.Agents[i]] = new HashSet<Edge>(close);
-            AgentsData.ProximityGraph.TooClose[AgentsData.Agents[i]] = new HashSet<Edge>(tooClose);
-            job.Close.Dispose();
-            job.TooClose.Dispose();
-        }
+        JobHandle finalJobHandle = JobHandle.CombineDependencies(flockingJobHandles);
+        finalJobHandle.Complete();
 
         agentPositions.Dispose();
         agentForwards.Dispose();
-        jobHandles.Dispose();
-
-        foreach (Agent agent in AgentsData.Agents)
+        graphJobHandles.Dispose();
+        
+        for (int i = 0; i < agentCount; i++)
         {
-            switch (agent.Behavior)
-            {
-                case Behavior.Wandering:
-                    UpdateWanderingTarget(agent);
-                    break;
-                case Behavior.Flocking:
-                    UpdateFlockingTarget(agent);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            FlockingJob job = flockingJobs[i];
+            Agent agent = AgentsData.Agents[i];
+            agent.TargetPosition = agent.Position + job.Acceleration[0];
+            agent.Speed = job.Speed[0];
+            job.Acceleration.Dispose();
+            job.Speed.Dispose();
+            job.Close.Dispose();
+            job.TooClose.Dispose();
         }
+        
+        flockingJobHandles.Dispose();
     }
     
-    private void UpdateWanderingTarget(Agent agent)
-    {
-        if (Vector3.SqrMagnitude(agent.TargetPosition - agent.Position) < 1f)
-        {
-            agent.TargetPosition = Utility.RandomOnCircle(10);
-        }
-    }
-
-    private void UpdateFlockingTarget(Agent agent)
-    {
-        int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
-        if (cohesionCount == 0)
-        {
-            agent.DebugCohesion = DebugCohesion.NoCohesion;
-            return;
-        }
-        
-        agent.Speed = cohesionCount switch
-        {
-            < 12 => 8f,
-            < 30 => 3f,
-            _ => 0f
-        };
-
-        Vector3 cohesion = Vector3.zero;
-        foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
-        {
-            cohesion += edge.EndPosition;
-        }
-
-        cohesion /= cohesionCount;
-        cohesion -= agent.Position;
-        cohesion *= CohesionStrength;
-
-        Vector3 separation = Vector3.zero;
-        foreach (Edge edge in AgentsData.ProximityGraph.TooClose[agent])
-        {
-            separation += edge.SeparationVector.normalized / edge.SquareDistance;
-        }
-        separation *= SeparationStrength;
-        
-        Vector3 alignment = Vector3.zero;
-        foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
-        {
-            alignment += edge.EndForward;
-        }
-        alignment /= cohesionCount;
-        alignment *= AlignmentStrength;
-        
-
-        Vector3 acceleration = alignment + cohesion + separation;
-        
-        // agent.DebugCohesion = alignment.sqrMagnitude switch
-        // {
-        //     < 0.1f => DebugCohesion.LowCohesion,
-        //     < 3f => DebugCohesion.MiddleCohesion,
-        //     _ => DebugCohesion.HighCohesion
-        // };
-
-        agent.DebugCohesion = cohesionCount switch
-        {
-            < 12 => DebugCohesion.LowCohesion,
-            < 30 => DebugCohesion.MiddleCohesion,
-            _ => DebugCohesion.HighCohesion
-        };
-        
-        agent.TargetPosition = agent.Position + acceleration;
-    }
-
     private void OnDrawGizmos()
     {
         if (AgentsData.Agents == null) return;
@@ -219,47 +104,6 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             };
             Gizmos.DrawLine(agent.Position, agent.TargetPosition);
             Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
-        }
-    }
-}
-
-public struct ConstructGraphJob : IJobParallelFor
-{
-    [ReadOnly] public NativeArray<Vector3> AgentPositions;
-    [ReadOnly] public NativeArray<Vector3> AgentForwards;
-    public NativeArray<Edge> Close;
-    public NativeArray<Edge> TooClose;
-    public int AgentIndex;
-
-    private const float CloseDistance = 25f;
-    private const float TooCloseDistance = 2f;
-
-    public void Execute(int index)
-    {
-        if (AgentIndex == index)
-        {
-            return;
-        }
-
-        Vector3 separationVector = AgentPositions[AgentIndex] - AgentPositions[index];
-        float squareDistance = separationVector.sqrMagnitude;
-
-        if (squareDistance < CloseDistance)
-        {
-            Edge edge = new()
-            {
-                SquareDistance = squareDistance,
-                SeparationVector = separationVector,
-                EndPosition = AgentPositions[index],
-                EndForward = AgentForwards[index],
-                Index = index
-            };
-            Close[index] = edge;
-
-            if (squareDistance < TooCloseDistance)
-            {
-                TooClose[index] = edge;
-            }
         }
     }
 }

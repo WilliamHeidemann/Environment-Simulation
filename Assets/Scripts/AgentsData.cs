@@ -11,8 +11,8 @@ public class AgentsData : ScriptableObject
 
 public class ProximityGraph
 {
-    public readonly Dictionary<Agent, HashSet<Edge>> Close = new();
-    public readonly Dictionary<Agent, HashSet<Edge>> TooClose = new();
+    public readonly Dictionary<Agent, Edge[]> Close = new();
+    public readonly Dictionary<Agent, Edge[]> TooClose = new();
 }
 
 public struct Edge : IEquatable<Edge>
