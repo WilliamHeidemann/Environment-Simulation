@@ -10,12 +10,14 @@ public class AgentTranslator : MonoBehaviour
     {
         var agents = _agentsData.Agents;
         var targetPositions = new NativeArray<Vector3>(agents.Count, Allocator.TempJob);
+        var agentSpeeds = new NativeArray<float>(agents.Count, Allocator.TempJob);
         var agentPositions = new NativeArray<Vector3>(agents.Count, Allocator.TempJob);
         var agentRotations = new NativeArray<Quaternion>(agents.Count, Allocator.TempJob);
 
         for (int i = 0; i < agents.Count; i++)
         {
             targetPositions[i] = agents[i].TargetPosition;
+            agentSpeeds[i] = agents[i].Speed;
             agentPositions[i] = agents[i].Position;
             agentRotations[i] = agents[i].Rotation;
         }
@@ -23,6 +25,7 @@ public class AgentTranslator : MonoBehaviour
         var job = new TranslateJob
         {
             TargetPositions = targetPositions,
+            AgentSpeeds = agentSpeeds,
             AgentPositions = agentPositions,
             AgentRotations = agentRotations,
             DeltaTime = Time.deltaTime
@@ -37,6 +40,7 @@ public class AgentTranslator : MonoBehaviour
         }
 
         targetPositions.Dispose();
+        agentSpeeds.Dispose();
         agentPositions.Dispose();
         agentRotations.Dispose();
     }
@@ -45,6 +49,7 @@ public class AgentTranslator : MonoBehaviour
 public struct TranslateJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<Vector3> TargetPositions;
+    [ReadOnly] public NativeArray<float> AgentSpeeds;
     [ReadOnly] public float DeltaTime;
     public NativeArray<Vector3> AgentPositions;
     public NativeArray<Quaternion> AgentRotations;
@@ -54,6 +59,11 @@ public struct TranslateJob : IJobParallelFor
 
     public void Execute(int index)
     {
+        if (AgentSpeeds[index] < 0.1f)
+        {
+            return;
+        }
+        
         Vector3 direction = TargetPositions[index] - AgentPositions[index];
         if (direction.sqrMagnitude < 0.1f)
         {
@@ -78,7 +88,7 @@ public struct TranslateJob : IJobParallelFor
 
     private void Translate(int index, Vector3 direction)
     {
-        Vector3 distanceToMove = direction * (TranslationSpeed * DeltaTime);
+        Vector3 distanceToMove = direction.normalized * (AgentSpeeds[index] * TranslationSpeed * DeltaTime);
         AgentPositions[index] += distanceToMove;
     }
 }

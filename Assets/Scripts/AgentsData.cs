@@ -20,6 +20,7 @@ public struct Edge : IEquatable<Edge>
     public float SquareDistance;
     public Vector3 SeparationVector;
     public Vector3 EndPosition;
+    public Vector3 EndForward;
     public int Index;
 
     public bool Equals(Edge other)

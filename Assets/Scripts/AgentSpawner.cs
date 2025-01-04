@@ -16,7 +16,7 @@ public class AgentSpawner : MonoBehaviour
         Random.InitState(0);
         for (int i = 0; i < _spawnCount; i++)
         {
-            Behavior behavior = Random.value > 0.9f ? Behavior.Wandering : Behavior.Flocking;
+            Behavior behavior = Behavior.Flocking; //Random.value > 0.9f ? Behavior.Wandering : Behavior.Flocking;
             Vector3 position = Utility.RandomInCircle(_spawnRadius);
             Quaternion rotation = Quaternion.LookRotation(Utility.RandomOnCircle());
             Vector3 scale = behavior == Behavior.Wandering ? Vector3.one * 2 : Vector3.one;

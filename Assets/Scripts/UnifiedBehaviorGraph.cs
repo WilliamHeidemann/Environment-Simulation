@@ -11,6 +11,9 @@ using Random = UnityEngine.Random;
 public class UnifiedBehaviorGraph : MonoBehaviour
 {
     [SerializeField] private AgentsData AgentsData;
+    [SerializeField] private float CohesionStrength;
+    [SerializeField] private float AlignmentStrength;
+    [SerializeField] private float SeparationStrength;
 
     public void Update()
     {
@@ -72,9 +75,11 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
         int agentCount = AgentsData.Agents.Count;
         var agentPositions = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
+        var agentForwards = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
         for (int i = 0; i < agentCount; i++)
         {
             agentPositions[i] = AgentsData.Agents[i].Position;
+            agentForwards[i] = AgentsData.Agents[i].Rotation * Vector3.forward;
         }
 
         var jobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
@@ -87,6 +92,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             var constructGraphJob = new ConstructGraphJob
             {
                 AgentPositions = agentPositions,
+                AgentForwards = agentForwards,
                 Close = close,
                 TooClose = tooClose,
                 AgentIndex = i
@@ -110,6 +116,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         }
 
         agentPositions.Dispose();
+        agentForwards.Dispose();
         jobHandles.Dispose();
 
         foreach (Agent agent in AgentsData.Agents)
@@ -141,8 +148,16 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         int cohesionCount = AgentsData.ProximityGraph.Close[agent].Count;
         if (cohesionCount == 0)
         {
+            agent.DebugCohesion = DebugCohesion.NoCohesion;
             return;
         }
+        
+        agent.Speed = cohesionCount switch
+        {
+            < 12 => 8f,
+            < 30 => 3f,
+            _ => 0f
+        };
 
         Vector3 cohesion = Vector3.zero;
         foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
@@ -152,33 +167,56 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
         cohesion /= cohesionCount;
         cohesion -= agent.Position;
+        cohesion *= CohesionStrength;
 
         Vector3 separation = Vector3.zero;
         foreach (Edge edge in AgentsData.ProximityGraph.TooClose[agent])
         {
-            separation += (edge.SeparationVector.normalized / edge.SquareDistance) * 5f;
+            separation += edge.SeparationVector.normalized / edge.SquareDistance;
         }
-
-        Vector3 acceleration = cohesion + separation;
-
-        if (cohesion.sqrMagnitude < 2f)
+        separation *= SeparationStrength;
+        
+        Vector3 alignment = Vector3.zero;
+        foreach (Edge edge in AgentsData.ProximityGraph.Close[agent])
         {
-            acceleration = Vector3.zero;
+            alignment += edge.EndForward;
         }
-        else if (cohesion.sqrMagnitude < 4f)
-        {
-            acceleration = agent.Rotation * Vector3.forward;
-        }
+        alignment /= cohesionCount;
+        alignment *= AlignmentStrength;
+        
 
+        Vector3 acceleration = alignment + cohesion + separation;
+        
+        // agent.DebugCohesion = alignment.sqrMagnitude switch
+        // {
+        //     < 0.1f => DebugCohesion.LowCohesion,
+        //     < 3f => DebugCohesion.MiddleCohesion,
+        //     _ => DebugCohesion.HighCohesion
+        // };
+
+        agent.DebugCohesion = cohesionCount switch
+        {
+            < 12 => DebugCohesion.LowCohesion,
+            < 30 => DebugCohesion.MiddleCohesion,
+            _ => DebugCohesion.HighCohesion
+        };
+        
         agent.TargetPosition = agent.Position + acceleration;
     }
 
     private void OnDrawGizmos()
     {
         if (AgentsData.Agents == null) return;
-        Gizmos.color = Color.red;
         foreach (Agent agent in AgentsData.Agents)
         {
+            Gizmos.color = agent.DebugCohesion switch
+            {
+                DebugCohesion.NoCohesion => Color.black,
+                DebugCohesion.LowCohesion => Color.red, 
+                DebugCohesion.MiddleCohesion => Color.yellow,
+                DebugCohesion.HighCohesion => Color.green,
+                _ => throw new ArgumentOutOfRangeException()
+            };
             Gizmos.DrawLine(agent.Position, agent.TargetPosition);
             Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
         }
@@ -188,6 +226,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 public struct ConstructGraphJob : IJobParallelFor
 {
     [ReadOnly] public NativeArray<Vector3> AgentPositions;
+    [ReadOnly] public NativeArray<Vector3> AgentForwards;
     public NativeArray<Edge> Close;
     public NativeArray<Edge> TooClose;
     public int AgentIndex;
@@ -212,6 +251,7 @@ public struct ConstructGraphJob : IJobParallelFor
                 SquareDistance = squareDistance,
                 SeparationVector = separationVector,
                 EndPosition = AgentPositions[index],
+                EndForward = AgentForwards[index],
                 Index = index
             };
             Close[index] = edge;

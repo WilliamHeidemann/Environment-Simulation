@@ -605,6 +605,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AgentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
+  CohesionStrength: 1
+  AlignmentStrength: 3
+  SeparationStrength: 3
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -777,7 +780,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentRenderer: {fileID: 1395441409}
-  _spawnCount: 800
+  _spawnCount: 200
   _spawnRadius: 20
 --- !u!114 &1395441409
 MonoBehaviour:
