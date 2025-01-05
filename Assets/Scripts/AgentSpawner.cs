@@ -14,7 +14,6 @@ public class AgentSpawner : MonoBehaviour
     private void Start()
     {
         _agentsData.Agents = new List<Agent>();
-        _agentsData.ProximityGraph = new ProximityGraph();
         Random.InitState(0);
         for (int i = 0; i < _spawnCount; i++)
         {
@@ -34,8 +33,6 @@ public class AgentSpawner : MonoBehaviour
             };
             
             _agentsData.Agents.Add(agent);
-            _agentsData.ProximityGraph.Close.Add(agent, Array.Empty<Edge>());
-            _agentsData.ProximityGraph.TooClose.Add(agent, Array.Empty<Edge>());
         }
 
         _agentRenderer.GatherMeshesAndMaterials();

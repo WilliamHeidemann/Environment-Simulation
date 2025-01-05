@@ -6,13 +6,6 @@ using UnityEngine;
 public class AgentsData : ScriptableObject
 {
     public List<Agent> Agents;
-    public ProximityGraph ProximityGraph;
-}
-
-public class ProximityGraph
-{
-    public readonly Dictionary<Agent, Edge[]> Close = new();
-    public readonly Dictionary<Agent, Edge[]> TooClose = new();
 }
 
 public struct Edge : IEquatable<Edge>

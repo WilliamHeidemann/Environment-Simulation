@@ -33,7 +33,7 @@ namespace Jobs
             {
                 < 12 => 8f,
                 < 30 => 3f,
-                _ => 0f
+                _ => 1.5f
             };
 
             Vector3 cohesion = Vector3.zero;

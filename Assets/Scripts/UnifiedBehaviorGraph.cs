@@ -16,6 +16,8 @@ public class UnifiedBehaviorGraph : MonoBehaviour
     [SerializeField] private float AlignmentStrength;
     [SerializeField] private float SeparationStrength;
 
+    [SerializeField] private Transform Shepherd;
+
     public void Update()
     {
         int agentCount = AgentsData.Agents.Count;
@@ -84,6 +86,18 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             job.Speed.Dispose();
             job.Close.Dispose();
             job.TooClose.Dispose();
+        }
+
+        for (int i = 0; i < agentCount; i++)
+        {
+            Agent agent = AgentsData.Agents[i];
+            float distance = Vector3.Distance(agent.Position, Shepherd.position);
+            if (distance > 10f) continue;
+            Vector3 direction = agent.Position - Shepherd.position;
+            float strength = -distance + 20f;
+            // Vector3 separation = agent.Position - agent.TargetPosition;
+            agent.TargetPosition += direction * (strength  * 0.01f);
+            agent.Speed += strength;
         }
         
         flockingJobHandles.Dispose();
