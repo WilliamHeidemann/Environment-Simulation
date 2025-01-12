@@ -18,91 +18,105 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     [SerializeField] private Transform Shepherd;
 
-    public void Update()
+    private NativeArray<Vector3> _agentPositions;
+    private NativeArray<Vector3> _agentForwards;
+    private ConstructGraphJob[] _constructGraphJobs;
+    
+    private NativeArray<JobHandle> _flockingJobHandles;
+    private FlockingJob[] _flockingJobs;
+
+    private void Start()
     {
-        int agentCount = AgentsData.Agents.Count;
-        var agentPositions = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
-        var agentForwards = new NativeArray<Vector3>(agentCount, Allocator.TempJob);
-        for (int i = 0; i < agentCount; i++)
+        int count = AgentsData.Agents.Count;
+        _agentPositions = new NativeArray<Vector3>(count, Allocator.Persistent);
+        _agentForwards = new NativeArray<Vector3>(count, Allocator.Persistent);
+        _constructGraphJobs = new ConstructGraphJob[count];
+        for (int i = 0; i < count; i++)
         {
-            agentPositions[i] = AgentsData.Agents[i].Position;
-            agentForwards[i] = AgentsData.Agents[i].Rotation * Vector3.forward;
-        }
-
-        var graphJobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
-        var graphJobs = new ConstructGraphJob[agentCount];
-        var flockingJobHandles = new NativeArray<JobHandle>(agentCount, Allocator.TempJob);
-        var flockingJobs = new FlockingJob[agentCount];
-
-        for (int i = 0; i < agentCount; i++)
-        {
-            var close = new NativeArray<Edge>(agentCount, Allocator.TempJob);
-            var tooClose = new NativeArray<Edge>(agentCount, Allocator.TempJob);
-            var graphJob = new ConstructGraphJob
+            _constructGraphJobs[i] = new ConstructGraphJob
             {
-                AgentPositions = agentPositions,
-                AgentForwards = agentForwards,
-                Close = close,
-                TooClose = tooClose,
+                AgentPositions = _agentPositions,
+                AgentForwards = _agentForwards,
+                Close = new NativeArray<Edge>(count, Allocator.Persistent),
+                TooClose = new NativeArray<Edge>(count, Allocator.Persistent),
                 AgentIndex = i
             };
-            graphJobs[i] = graphJob;
-            JobHandle graphJobHandle = graphJob.Schedule(agentCount, 128);
-            graphJobHandles[i] = graphJobHandle;
-            
-            Agent agent = AgentsData.Agents[i];
-            var acceleration = new NativeArray<Vector3>(1, Allocator.TempJob);
-            var speed = new NativeArray<float>(1, Allocator.TempJob);
-            var flockingJob = new FlockingJob
+        }
+        
+        _flockingJobHandles = new NativeArray<JobHandle>(count, Allocator.Persistent);
+        _flockingJobs = new FlockingJob[count];
+        for (int i = 0; i < count; i++)
+        {
+            _flockingJobs[i] = new FlockingJob
             {
-                Acceleration = acceleration,
-                Speed = speed,
-                Position = agent.Position,
-                Close = close,
-                TooClose = tooClose,
+                Acceleration = new NativeArray<Vector3>(1, Allocator.Persistent),
+                Speed = new NativeArray<float>(1, Allocator.Persistent),
+                // Position = AgentsData.Agents[i].Position,
+                Close = _constructGraphJobs[i].Close,
+                TooClose = _constructGraphJobs[i].TooClose,
                 CohesionStrength = CohesionStrength,
                 AlignmentStrength = AlignmentStrength,
                 SeparationStrength = SeparationStrength
             };
-            flockingJobs[i] = flockingJob;
-            JobHandle flockingJobHandle = flockingJob.Schedule(graphJobHandle);
-            flockingJobHandles[i] = flockingJobHandle;
+        }
+    }
+
+    public void Update()
+    {
+        int agentCount = AgentsData.Agents.Count;
+        for (int i = 0; i < agentCount; i++)
+        {
+            _agentPositions[i] = AgentsData.Agents[i].Position;
+            _agentForwards[i] = AgentsData.Agents[i].Rotation * Vector3.forward;
         }
 
-        JobHandle finalJobHandle = JobHandle.CombineDependencies(flockingJobHandles);
-        finalJobHandle.Complete();
+        for (int i = 0; i < agentCount; i++)
+        {
+            JobHandle graphJobHandle = _constructGraphJobs[i].Schedule(agentCount, 128);
+            _flockingJobs[i].Position = AgentsData.Agents[i].Position;
+            _flockingJobHandles[i] = _flockingJobs[i].Schedule(graphJobHandle);
+        }
 
-        agentPositions.Dispose();
-        agentForwards.Dispose();
-        graphJobHandles.Dispose();
+        JobHandle.CombineDependencies(_flockingJobHandles).Complete();
         
         for (int i = 0; i < agentCount; i++)
         {
-            FlockingJob job = flockingJobs[i];
+            FlockingJob job = _flockingJobs[i];
             Agent agent = AgentsData.Agents[i];
             agent.TargetPosition = agent.Position + job.Acceleration[0];
             agent.Speed = job.Speed[0];
-            job.Acceleration.Dispose();
-            job.Speed.Dispose();
-            job.Close.Dispose();
-            job.TooClose.Dispose();
         }
 
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
-            float distance = Vector3.Distance(agent.Position, Shepherd.position);
-            if (distance > 10f) continue;
+            float distance = Vector3.SqrMagnitude(agent.Position - Shepherd.position);
+            if (distance > 100f) continue;
             Vector3 direction = agent.Position - Shepherd.position;
-            float strength = -distance + 20f;
+            float strength = -(distance * 0.1f) + 20f;
             // Vector3 separation = agent.Position - agent.TargetPosition;
             agent.TargetPosition += direction * (strength  * 0.01f);
             agent.Speed += strength;
         }
-        
-        flockingJobHandles.Dispose();
     }
-    
+
+    private void OnDestroy()
+    {
+        _agentPositions.Dispose();
+        _agentForwards.Dispose();
+        foreach (FlockingJob job in _flockingJobs)
+        {
+            job.Acceleration.Dispose();
+            job.Speed.Dispose();
+        }
+        foreach (ConstructGraphJob job in _constructGraphJobs)
+        {
+            job.Close.Dispose();
+            job.TooClose.Dispose();
+        }
+        _flockingJobHandles.Dispose();
+    }
+
     private void OnDrawGizmos()
     {
         if (AgentsData.Agents == null) return;

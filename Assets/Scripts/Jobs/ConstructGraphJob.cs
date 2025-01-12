@@ -44,6 +44,11 @@ namespace Jobs
                     TooClose[index] = edge;
                 }
             }
+            else
+            {
+                Close[index] = default;
+                TooClose[index] = default;
+            }
         }
     }
 }
