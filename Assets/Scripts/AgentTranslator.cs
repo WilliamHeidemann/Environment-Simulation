@@ -1,3 +1,4 @@
+using System;
 using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
@@ -6,29 +7,39 @@ using UnityEngine;
 public class AgentTranslator : MonoBehaviour
 {
     [SerializeField] private AgentsData _agentsData;
+    
+    private NativeArray<Vector3> _targetPositions;
+    private NativeArray<float> _agentSpeeds;
+    private NativeArray<Vector3> _agentPositions;
+    private NativeArray<Quaternion> _agentRotations;
+
+    private void Start()
+    {
+        var agents = _agentsData.Agents;
+        _targetPositions = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
+        _agentSpeeds = new NativeArray<float>(agents.Count, Allocator.Persistent);
+        _agentPositions = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
+        _agentRotations = new NativeArray<Quaternion>(agents.Count, Allocator.Persistent);
+    }
 
     private void Update()
     {
         var agents = _agentsData.Agents;
-        var targetPositions = new NativeArray<Vector3>(agents.Count, Allocator.TempJob);
-        var agentSpeeds = new NativeArray<float>(agents.Count, Allocator.TempJob);
-        var agentPositions = new NativeArray<Vector3>(agents.Count, Allocator.TempJob);
-        var agentRotations = new NativeArray<Quaternion>(agents.Count, Allocator.TempJob);
 
         for (int i = 0; i < agents.Count; i++)
         {
-            targetPositions[i] = agents[i].TargetPosition;
-            agentSpeeds[i] = agents[i].Speed;
-            agentPositions[i] = agents[i].Position;
-            agentRotations[i] = agents[i].Rotation;
+            _targetPositions[i] = agents[i].TargetPosition;
+            _agentSpeeds[i] = agents[i].Speed;
+            _agentPositions[i] = agents[i].Position;
+            _agentRotations[i] = agents[i].Rotation;
         }
 
         var job = new TranslateJob
         {
-            TargetPositions = targetPositions,
-            AgentSpeeds = agentSpeeds,
-            AgentPositions = agentPositions,
-            AgentRotations = agentRotations,
+            TargetPositions = _targetPositions,
+            AgentSpeeds = _agentSpeeds,
+            AgentPositions = _agentPositions,
+            AgentRotations = _agentRotations,
             DeltaTime = Time.deltaTime
         };
 
@@ -36,13 +47,16 @@ public class AgentTranslator : MonoBehaviour
 
         for (int i = 0; i < agents.Count; i++)
         {
-            agents[i].Position = agentPositions[i];
-            agents[i].Rotation = agentRotations[i];
+            agents[i].Position = _agentPositions[i];
+            agents[i].Rotation = _agentRotations[i];
         }
+    }
 
-        targetPositions.Dispose();
-        agentSpeeds.Dispose();
-        agentPositions.Dispose();
-        agentRotations.Dispose();
+    private void OnDestroy()
+    {
+        _targetPositions.Dispose();
+        _agentSpeeds.Dispose();
+        _agentPositions.Dispose();
+        _agentRotations.Dispose();
     }
 }
