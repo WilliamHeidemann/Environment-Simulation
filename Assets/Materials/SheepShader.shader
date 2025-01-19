@@ -1,12 +1,15 @@
-Shader "Unlit/SheepShader"
+Shader "Custom/SheepShader"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Texture", 2D) = "white" {}
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags
+        {
+            "RenderType"="Opaque"
+        }
         LOD 100
 
         Pass
@@ -18,6 +21,9 @@ Shader "Unlit/SheepShader"
             #pragma multi_compile_fog
 
             #include "UnityCG.cginc"
+
+            #define UNITY_INDIRECT_DRAW_ARGS IndirectDrawIndexedArgs
+            #include "UnityIndirect.cginc"
 
             struct appdata
             {
@@ -32,25 +38,27 @@ Shader "Unlit/SheepShader"
                 float4 position : SV_POSITION;
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
+            sampler2D _Color;
+            float4 _Color_ST;
 
             StructuredBuffer<float4x4> transform_buffer;
 
-            v2f vert (appdata v, uint id : SV_InstanceID)
+            v2f vert(appdata v, const uint id : SV_InstanceID)
             {
+                InitIndirectDrawArgs(0);
                 v2f o;
-                float4x4 instanceMatrix = transform_buffer[id];
-                float4 worldSpace = mul(instanceMatrix, float4(v.position, 1.0));
-                o.position = UnityObjectToClipPos(worldSpace);
+                uint instanceID = GetIndirectInstanceID(id);
+                const float4x4 instance_matrix = transform_buffer[instanceID];
+                const float4 world_space = mul(instance_matrix, float4(v.position, 1.0));
+                o.position = UnityObjectToClipPos(world_space);
                 o.uv = v.uv;
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv);
+                fixed4 col = tex2D(_Color, i.uv);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
@@ -58,4 +66,5 @@ Shader "Unlit/SheepShader"
             ENDCG
         }
     }
+    Fallback "Diffuse"
 }

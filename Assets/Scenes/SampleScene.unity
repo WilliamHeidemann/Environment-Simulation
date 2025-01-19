@@ -527,7 +527,7 @@ MonoBehaviour:
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentRenderer: {fileID: 1395441409}
   _spawnCount: 1000
-  _spawnRadius: 80
+  _spawnRadius: 20
 --- !u!114 &1395441409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,6 +542,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentPrefab: {fileID: 2654605188707293547, guid: 5ca0af98eba42cd49a609f9eeeaaff2c, type: 3}
+  _shader: {fileID: 2100000, guid: 2c75b1a60b3312742b63fc6f97da9a26, type: 2}
 --- !u!114 &1395441410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -801,7 +802,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6688317705516637892, guid: 32e0420f9e5094145aa234fbe56d0a4b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -78
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 6688317705516637892, guid: 32e0420f9e5094145aa234fbe56d0a4b, type: 3}
       propertyPath: m_LocalRotation.w

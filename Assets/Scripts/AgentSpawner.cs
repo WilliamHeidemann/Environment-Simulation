@@ -36,5 +36,6 @@ public class AgentSpawner : MonoBehaviour
         }
 
         _agentRenderer.GatherMeshesAndMaterials();
+        _agentRenderer.SetupShader();
     }
 }
