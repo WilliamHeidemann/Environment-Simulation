@@ -26,14 +26,8 @@ public class AgentRenderer : MonoBehaviour
 
     public void GatherMeshesAndMaterials()
     {
-        // Combine meshes
-        var meshFilters = _agentPrefab.GetComponentsInChildren<MeshFilter>();
-        var combineInstances = new CombineInstance[meshFilters.Length];
-        for (int i = 0; i < meshFilters.Length; i++)
-        {
-            combineInstances[i].mesh = meshFilters[i].sharedMesh;
-            combineInstances[i].transform = meshFilters[i].transform.localToWorldMatrix;
-        }
+        // var combineInstances = CombineInstancesMeshFilters();
+        var combineInstances = CombineInstancesSkinnedMeshRenderers();
 
         _combinedMesh = new Mesh();
         _combinedMesh.CombineMeshes(combineInstances);
@@ -42,6 +36,35 @@ public class AgentRenderer : MonoBehaviour
         {
             worldBounds = new Bounds(Vector3.zero, Vector3.one * 1000)
         };
+    }
+
+    private CombineInstance[] CombineInstancesMeshFilters()
+    {
+        var meshFilters = _agentPrefab.GetComponentsInChildren<MeshFilter>();
+        var combineInstances = new CombineInstance[meshFilters.Length];
+        for (int i = 0; i < meshFilters.Length; i++)
+        {
+            combineInstances[i].mesh = meshFilters[i].sharedMesh;
+            combineInstances[i].transform = meshFilters[i].transform.localToWorldMatrix;
+        }
+
+        return combineInstances;
+    }
+
+    private CombineInstance[] CombineInstancesSkinnedMeshRenderers()
+    {
+        var skinnedMeshRenderers = _agentPrefab.GetComponentsInChildren<SkinnedMeshRenderer>();
+        var combineInstances = new CombineInstance[skinnedMeshRenderers.Length];
+        for (int i = 0; i < skinnedMeshRenderers.Length; i++)
+        {
+            var mesh = new Mesh();
+            skinnedMeshRenderers[i].BakeMesh(mesh);
+            
+            combineInstances[i].mesh = mesh;
+            combineInstances[i].transform = skinnedMeshRenderers[i].localToWorldMatrix;
+        }
+
+        return combineInstances;
     }
 
     public void SetupShader()
