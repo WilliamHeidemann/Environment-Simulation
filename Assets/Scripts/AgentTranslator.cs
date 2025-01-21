@@ -12,6 +12,8 @@ public class AgentTranslator : MonoBehaviour
     private NativeArray<float> _agentSpeeds;
     private NativeArray<Vector3> _agentPositions;
     private NativeArray<Quaternion> _agentRotations;
+    
+    // [SerializeField] private HexagonalSpatialGridDebugger _hexagonalSpatialGridDebugger;
 
     private void Start()
     {
@@ -50,6 +52,8 @@ public class AgentTranslator : MonoBehaviour
             agents[i].Position = _agentPositions[i];
             agents[i].Rotation = _agentRotations[i];
         }
+        
+        // _hexagonalSpatialGridDebugger.UpdateHexGrid(agents);
     }
 
     private void OnDestroy()

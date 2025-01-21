@@ -119,19 +119,24 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (AgentsData.Agents == null) return;
-        foreach (Agent agent in AgentsData.Agents)
-        {
-            Gizmos.color = agent.DebugCohesion switch
-            {
-                DebugCohesion.NoCohesion => Color.black,
-                DebugCohesion.LowCohesion => Color.red, 
-                DebugCohesion.MiddleCohesion => Color.yellow,
-                DebugCohesion.HighCohesion => Color.green,
-                _ => throw new ArgumentOutOfRangeException()
-            };
-            Gizmos.DrawLine(agent.Position, agent.TargetPosition);
-            Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
-        }
+        // if (AgentsData.Agents == null) return;
+        // foreach (Agent agent in AgentsData.Agents)
+        // {
+        //     Gizmos.color = agent.DebugCohesion switch
+        //     {
+        //         DebugCohesion.NoCohesion => Color.black,
+        //         DebugCohesion.LowCohesion => Color.red, 
+        //         DebugCohesion.MiddleCohesion => Color.yellow,
+        //         DebugCohesion.HighCohesion => Color.green,
+        //         _ => throw new ArgumentOutOfRangeException()
+        //     };
+        //     Gizmos.DrawLine(agent.Position, agent.TargetPosition);
+        //     Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
+        // }
+        // foreach (Agent agent in AgentsData.Agents)
+        // {
+        //     Gizmos.color = new Color(1f, 0f, 0f, 0.2f);
+        //     Gizmos.DrawWireSphere(agent.Position, 5f);
+        // }
     }
 }
