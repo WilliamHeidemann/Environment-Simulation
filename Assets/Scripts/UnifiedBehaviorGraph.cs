@@ -14,8 +14,6 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     [SerializeField] private Transform Shepherd;
 
-    private NativeArray<Vector3> _agentPositions;
-    private NativeArray<Vector3> _agentForwards;
     private FlockingJob2 _flockingJob;
 
     private SpatialHashGrid _spatialHashGrid;
@@ -23,8 +21,6 @@ public class UnifiedBehaviorGraph : MonoBehaviour
     private void Start()
     {
         int count = AgentsData.Agents.Count;
-        _agentPositions = new NativeArray<Vector3>(count, Allocator.Persistent);
-        _agentForwards = new NativeArray<Vector3>(count, Allocator.Persistent);
         _spatialHashGrid = new SpatialHashGrid(4);
 
         var accelerations = new NativeArray<Vector3>(count, Allocator.Persistent);
@@ -32,6 +28,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         {
             Acceleration = accelerations,
             Speed = new NativeArray<float>(count, Allocator.Persistent),
+            Positions = new NativeArray<Vector3>(count, Allocator.Persistent),
             Close = new NativeArray<Edge>(count * 100, Allocator.Persistent),
             Offset = new NativeArray<int>(count, Allocator.Persistent),
             Lengths = new NativeArray<int>(count, Allocator.Persistent),
@@ -44,12 +41,14 @@ public class UnifiedBehaviorGraph : MonoBehaviour
     public void Update()
     {
         int agentCount = AgentsData.Agents.Count;
-        
+
+        _flockingJob.CohesionStrength = CohesionStrength;
+        _flockingJob.AlignmentStrength = AlignmentStrength;
+        _flockingJob.SeparationStrength = SeparationStrength;
+
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
-            _agentPositions[i] = agent.Position;
-            _agentForwards[i] = agent.Rotation * Vector3.forward;
             _spatialHashGrid.Set(agent);
         }
 
@@ -57,34 +56,42 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
+            
+            _flockingJob.Positions[i] = agent.Position;
+
             var nearby = _spatialHashGrid.GetNearby(agent)
                 .Select(agent2 => new Edge
                 {
                     SquareDistance = Vector3.SqrMagnitude(agent.Position - agent2.Position),
-                    SeparationVector = agent.Position - agent2.Position,
+                    SeparationVector = agent2.Position - agent.Position,
                     EndPosition = agent2.Position,
                     EndForward = agent2.Rotation * Vector3.forward,
                 }).ToArray();
-            
+
             _flockingJob.Offset[i] = offset;
-            for (int j = offset; j < nearby.Length; j++)
+            for (int j = 0; j < nearby.Length; j++)
             {
-                _flockingJob.Close[j] = nearby[j];
+                _flockingJob.Close[j + offset] = nearby[j];
             }
+
             offset += nearby.Length;
             _flockingJob.Lengths[i] = nearby.Length;
         }
 
         _flockingJob.DeltaTime = Time.deltaTime;
         _flockingJob.Schedule(agentCount, 128).Complete();
-        
+
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
             agent.Velocity += _flockingJob.Acceleration[i];
             agent.Speed = _flockingJob.Speed[i];
         }
+    }
 
+    private void AvoidShepherd()
+    {
+        int agentCount = AgentsData.Agents.Count;
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
@@ -100,11 +107,12 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     private void OnDestroy()
     {
-        _agentPositions.Dispose();
-        _agentForwards.Dispose();
         _flockingJob.Acceleration.Dispose();
         _flockingJob.Speed.Dispose();
+        _flockingJob.Positions.Dispose();
         _flockingJob.Close.Dispose();
+        _flockingJob.Offset.Dispose();
+        _flockingJob.Lengths.Dispose();
     }
 
     private void OnDrawGizmos()
@@ -113,13 +121,8 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         foreach (Agent agent in AgentsData.Agents)
         {
             Gizmos.color = Color.black;
-            Gizmos.DrawLine(agent.Position, agent.Velocity);
-            Gizmos.DrawCube(agent.Velocity, Vector3.one * 0.4f);
+            Gizmos.DrawLine(agent.Position, agent.Position + agent.Velocity);
+            Gizmos.DrawCube(agent.Position + agent.Velocity, Vector3.one * 0.4f);
         }
-        // foreach (Agent agent in AgentsData.Agents)
-        // {
-        //     Gizmos.color = new Color(1f, 0f, 0f, 0.2f);
-        //     Gizmos.DrawWireSphere(agent.Position, 5f);
-        // }
     }
 }

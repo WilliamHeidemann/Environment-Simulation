@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
@@ -52,8 +53,6 @@ public class AgentTranslator : MonoBehaviour
             agents[i].Position = _agentPositions[i];
             agents[i].Rotation = _agentRotations[i];
         }
-        
-        // _hexagonalSpatialGridDebugger.UpdateHexGrid(agents);
     }
 
     private void OnDestroy()

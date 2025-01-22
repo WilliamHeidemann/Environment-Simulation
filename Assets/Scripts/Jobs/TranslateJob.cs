@@ -19,6 +19,11 @@ namespace Jobs
 
         public void Execute(int index)
         {
+            if (Velocities[index] == Vector3.zero)
+            {
+                return;
+            }
+            
             AgentPositions[index] += Velocities[index].normalized * AgentSpeeds[index] * DeltaTime;
             AgentRotations[index] = Quaternion.LookRotation(Velocities[index]);
             

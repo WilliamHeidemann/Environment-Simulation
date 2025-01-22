@@ -526,7 +526,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentRenderer: {fileID: 1395441409}
-  _spawnCount: 200
+  _spawnCount: 100
   _spawnRadius: 50
 --- !u!114 &1395441409
 MonoBehaviour:
@@ -556,9 +556,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AgentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
-  CohesionStrength: 1
-  AlignmentStrength: 3
-  SeparationStrength: 3
+  CohesionStrength: 0
+  AlignmentStrength: 0
+  SeparationStrength: 0
   Shepherd: {fileID: 523003596}
 --- !u!114 &1395441411
 MonoBehaviour:

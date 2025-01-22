@@ -10,6 +10,11 @@ public class SpatialHashGridDebugger : MonoBehaviour
 
     [SerializeField] private AgentsData _agentsData;
 
+    private void Start()
+    {
+        _spatialHashGrid = new SpatialHashGrid(_cellSize);
+    }
+
     private void Update()
     {
         foreach (var agent in _agentsData.Agents)

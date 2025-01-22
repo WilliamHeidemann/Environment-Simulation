@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DataStructures;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Create AgentsData", fileName = "AgentsData", order = 0)]

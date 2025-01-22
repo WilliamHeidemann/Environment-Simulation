@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DataStructures;
 using UnityEngine;
 using UtilityToolkit.Runtime;
 using Random = UnityEngine.Random;
@@ -24,7 +25,7 @@ public class AgentSpawner : MonoBehaviour
             {
                 Position = position,
                 Rotation = rotation,
-                Velocity = position,
+                Velocity = Vector3.zero //rotation * Vector3.forward,
             };
             
             _agentsData.Agents.Add(agent);
