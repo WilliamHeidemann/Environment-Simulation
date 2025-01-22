@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
+using DataStructures;
 using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.Jobs;
-using UtilityToolkit.Runtime;
-using Random = UnityEngine.Random;
 
 public class UnifiedBehaviorGraph : MonoBehaviour
 {
@@ -18,75 +14,88 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     [SerializeField] private Transform Shepherd;
 
-    private NativeArray<Vector3> _agentPositions;
-    private NativeArray<Vector3> _agentForwards;
-    private ConstructGraphJob[] _constructGraphJobs;
-    
-    private NativeArray<JobHandle> _flockingJobHandles;
-    private FlockingJob[] _flockingJobs;
+    private FlockingJob _flockingJob;
+
+    private SpatialHashGrid _spatialHashGrid;
 
     private void Start()
     {
         int count = AgentsData.Agents.Count;
-        _agentPositions = new NativeArray<Vector3>(count, Allocator.Persistent);
-        _agentForwards = new NativeArray<Vector3>(count, Allocator.Persistent);
-        _constructGraphJobs = new ConstructGraphJob[count];
-        for (int i = 0; i < count; i++)
+        _spatialHashGrid = new SpatialHashGrid(4);
+
+        var accelerations = new NativeArray<Vector3>(count, Allocator.Persistent);
+        _flockingJob = new FlockingJob
         {
-            _constructGraphJobs[i] = new ConstructGraphJob
-            {
-                AgentPositions = _agentPositions,
-                AgentForwards = _agentForwards,
-                Close = new NativeArray<Edge>(count, Allocator.Persistent),
-                TooClose = new NativeArray<Edge>(count, Allocator.Persistent),
-                AgentIndex = i
-            };
-        }
-        
-        _flockingJobHandles = new NativeArray<JobHandle>(count, Allocator.Persistent);
-        _flockingJobs = new FlockingJob[count];
-        for (int i = 0; i < count; i++)
-        {
-            _flockingJobs[i] = new FlockingJob
-            {
-                Acceleration = new NativeArray<Vector3>(1, Allocator.Persistent),
-                Speed = new NativeArray<float>(1, Allocator.Persistent),
-                // Position = AgentsData.Agents[i].Position,
-                Close = _constructGraphJobs[i].Close,
-                TooClose = _constructGraphJobs[i].TooClose,
-                CohesionStrength = CohesionStrength,
-                AlignmentStrength = AlignmentStrength,
-                SeparationStrength = SeparationStrength
-            };
-        }
+            Acceleration = accelerations,
+            Speed = new NativeArray<float>(count, Allocator.Persistent),
+            Positions = new NativeArray<Vector3>(count, Allocator.Persistent),
+            Close = new NativeArray<Edge>(count * 100, Allocator.Persistent),
+            Offset = new NativeArray<int>(count, Allocator.Persistent),
+            Lengths = new NativeArray<int>(count, Allocator.Persistent),
+            CohesionStrength = CohesionStrength,
+            AlignmentStrength = AlignmentStrength,
+            SeparationStrength = SeparationStrength,
+            DebugCentreOfFlock = new NativeArray<Vector3>(count, Allocator.Persistent),
+            DebugAlignment = new NativeArray<Vector3>(count, Allocator.Persistent),
+            DebugSeparation = new NativeArray<Vector3>(count, Allocator.Persistent),
+        };
     }
 
     public void Update()
     {
         int agentCount = AgentsData.Agents.Count;
-        for (int i = 0; i < agentCount; i++)
-        {
-            _agentPositions[i] = AgentsData.Agents[i].Position;
-            _agentForwards[i] = AgentsData.Agents[i].Rotation * Vector3.forward;
-        }
+
+        _flockingJob.CohesionStrength = CohesionStrength;
+        _flockingJob.AlignmentStrength = AlignmentStrength;
+        _flockingJob.SeparationStrength = SeparationStrength;
 
         for (int i = 0; i < agentCount; i++)
         {
-            JobHandle graphJobHandle = _constructGraphJobs[i].Schedule(agentCount, 128);
-            _flockingJobs[i].Position = AgentsData.Agents[i].Position;
-            _flockingJobHandles[i] = _flockingJobs[i].Schedule(graphJobHandle);
-        }
-
-        JobHandle.CombineDependencies(_flockingJobHandles).Complete();
-        
-        for (int i = 0; i < agentCount; i++)
-        {
-            FlockingJob job = _flockingJobs[i];
             Agent agent = AgentsData.Agents[i];
-            agent.TargetPosition = agent.Position + job.Acceleration[0];
-            agent.Speed = job.Speed[0];
+            _spatialHashGrid.Set(agent);
         }
 
+        int offset = 0;
+        for (int i = 0; i < agentCount; i++)
+        {
+            Agent agent = AgentsData.Agents[i];
+            
+            _flockingJob.Positions[i] = agent.Position;
+
+            var nearby = _spatialHashGrid.GetNearby(agent)
+                .Select(agent2 => new Edge
+                {
+                    SquareDistance = Vector3.SqrMagnitude(agent.Position - agent2.Position),
+                    SeparationVector = agent.Position - agent2.Position,
+                    EndPosition = agent2.Position,
+                    EndForward = agent2.Rotation * Vector3.forward,
+                }).ToArray();
+
+            _flockingJob.Offset[i] = offset;
+            for (int j = 0; j < nearby.Length; j++)
+            {
+                _flockingJob.Close[j + offset] = nearby[j];
+            }
+
+            offset += nearby.Length;
+            _flockingJob.Lengths[i] = nearby.Length;
+        }
+
+        _flockingJob.DeltaTime = Time.deltaTime;
+        _flockingJob.Schedule(agentCount, 128).Complete();
+
+        for (int i = 0; i < agentCount; i++)
+        {
+            Agent agent = AgentsData.Agents[i];
+            agent.Velocity += _flockingJob.Acceleration[i];
+            agent.Velocity = Vector3.ClampMagnitude(agent.Velocity, 5f);
+            agent.Speed = _flockingJob.Speed[i];
+        }
+    }
+
+    private void AvoidShepherd()
+    {
+        int agentCount = AgentsData.Agents.Count;
         for (int i = 0; i < agentCount; i++)
         {
             Agent agent = AgentsData.Agents[i];
@@ -95,48 +104,46 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             Vector3 direction = agent.Position - Shepherd.position;
             float strength = -(distance * 0.1f) + 20f;
             // Vector3 separation = agent.Position - agent.TargetPosition;
-            agent.TargetPosition += direction * (strength  * 0.01f);
+            agent.Velocity += direction * (strength * 0.01f);
             agent.Speed += strength;
         }
     }
 
     private void OnDestroy()
     {
-        _agentPositions.Dispose();
-        _agentForwards.Dispose();
-        foreach (FlockingJob job in _flockingJobs)
-        {
-            job.Acceleration.Dispose();
-            job.Speed.Dispose();
-        }
-        foreach (ConstructGraphJob job in _constructGraphJobs)
-        {
-            job.Close.Dispose();
-            job.TooClose.Dispose();
-        }
-        _flockingJobHandles.Dispose();
+        _flockingJob.Acceleration.Dispose();
+        _flockingJob.Speed.Dispose();
+        _flockingJob.Positions.Dispose();
+        _flockingJob.Close.Dispose();
+        _flockingJob.Offset.Dispose();
+        _flockingJob.Lengths.Dispose();
     }
 
     private void OnDrawGizmos()
     {
-        // if (AgentsData.Agents == null) return;
-        // foreach (Agent agent in AgentsData.Agents)
-        // {
-        //     Gizmos.color = agent.DebugCohesion switch
-        //     {
-        //         DebugCohesion.NoCohesion => Color.black,
-        //         DebugCohesion.LowCohesion => Color.red, 
-        //         DebugCohesion.MiddleCohesion => Color.yellow,
-        //         DebugCohesion.HighCohesion => Color.green,
-        //         _ => throw new ArgumentOutOfRangeException()
-        //     };
-        //     Gizmos.DrawLine(agent.Position, agent.TargetPosition);
-        //     Gizmos.DrawCube(agent.TargetPosition, Vector3.one * 1f);
-        // }
-        // foreach (Agent agent in AgentsData.Agents)
-        // {
-        //     Gizmos.color = new Color(1f, 0f, 0f, 0.2f);
-        //     Gizmos.DrawWireSphere(agent.Position, 5f);
-        // }
+        if (AgentsData.Agents == null) return;
+        foreach (Agent agent in AgentsData.Agents)
+        {
+            // Debug Velocity
+            Gizmos.color = Color.black;
+            Gizmos.DrawLine(agent.Position, agent.Position + agent.Velocity);
+            Gizmos.DrawCube(agent.Position + agent.Velocity, Vector3.one * 0.4f);
+        }
+
+        for (int i = 0; i < AgentsData.Agents.Count; i++)
+        {
+            Agent agent = AgentsData.Agents[i];
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(agent.Position, agent.Position + _flockingJob.DebugCentreOfFlock[i]);
+            Gizmos.DrawCube(agent.Position + _flockingJob.DebugCentreOfFlock[i], Vector3.one * 0.4f);
+            
+            Gizmos.color = Color.gray;
+            Gizmos.DrawLine(agent.Position, agent.Position + _flockingJob.DebugAlignment[i]);
+            Gizmos.DrawCube(agent.Position + _flockingJob.DebugAlignment[i], Vector3.one * 0.4f);
+            
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawLine(agent.Position, agent.Position + _flockingJob.DebugSeparation[i]);
+            Gizmos.DrawCube(agent.Position + _flockingJob.DebugSeparation[i], Vector3.one * 0.4f);
+        }
     }
 }

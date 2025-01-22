@@ -1,3 +1,4 @@
+using DataStructures;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -35,7 +36,7 @@ namespace Jobs
                     SeparationVector = separationVector,
                     EndPosition = AgentPositions[index],
                     EndForward = AgentForwards[index],
-                    Index = index
+                    // Index = index
                 };
                 Close[index] = edge;
 

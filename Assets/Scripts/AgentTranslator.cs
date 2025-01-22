@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
@@ -8,7 +9,7 @@ public class AgentTranslator : MonoBehaviour
 {
     [SerializeField] private AgentsData _agentsData;
     
-    private NativeArray<Vector3> _targetPositions;
+    private NativeArray<Vector3> _velocities;
     private NativeArray<float> _agentSpeeds;
     private NativeArray<Vector3> _agentPositions;
     private NativeArray<Quaternion> _agentRotations;
@@ -18,7 +19,7 @@ public class AgentTranslator : MonoBehaviour
     private void Start()
     {
         var agents = _agentsData.Agents;
-        _targetPositions = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
+        _velocities = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
         _agentSpeeds = new NativeArray<float>(agents.Count, Allocator.Persistent);
         _agentPositions = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
         _agentRotations = new NativeArray<Quaternion>(agents.Count, Allocator.Persistent);
@@ -30,7 +31,7 @@ public class AgentTranslator : MonoBehaviour
 
         for (int i = 0; i < agents.Count; i++)
         {
-            _targetPositions[i] = agents[i].TargetPosition;
+            _velocities[i] = agents[i].Velocity;
             _agentSpeeds[i] = agents[i].Speed;
             _agentPositions[i] = agents[i].Position;
             _agentRotations[i] = agents[i].Rotation;
@@ -38,7 +39,7 @@ public class AgentTranslator : MonoBehaviour
 
         var job = new TranslateJob
         {
-            TargetPositions = _targetPositions,
+            Velocities = _velocities,
             AgentSpeeds = _agentSpeeds,
             AgentPositions = _agentPositions,
             AgentRotations = _agentRotations,
@@ -52,13 +53,11 @@ public class AgentTranslator : MonoBehaviour
             agents[i].Position = _agentPositions[i];
             agents[i].Rotation = _agentRotations[i];
         }
-        
-        // _hexagonalSpatialGridDebugger.UpdateHexGrid(agents);
     }
 
     private void OnDestroy()
     {
-        _targetPositions.Dispose();
+        _velocities.Dispose();
         _agentSpeeds.Dispose();
         _agentPositions.Dispose();
         _agentRotations.Dispose();

@@ -57,6 +57,7 @@ namespace DataStructures
 
                     foreach (Agent neighbor in neighborAgents)
                     {
+                        if (neighbor == agent) continue;
                         yield return neighbor;
                     }
                 }

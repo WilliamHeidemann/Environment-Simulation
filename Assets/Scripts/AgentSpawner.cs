@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DataStructures;
 using UnityEngine;
 using UtilityToolkit.Runtime;
 using Random = UnityEngine.Random;
@@ -17,19 +18,14 @@ public class AgentSpawner : MonoBehaviour
         Random.InitState(0);
         for (int i = 0; i < _spawnCount; i++)
         {
-            Behavior behavior = Behavior.Flocking; //Random.value > 0.9f ? Behavior.Wandering : Behavior.Flocking;
             Vector3 position = Utility.RandomInCircle(_spawnRadius);
             Quaternion rotation = Quaternion.LookRotation(Utility.RandomOnCircle());
-            Vector3 scale = behavior == Behavior.Wandering ? Vector3.one * 2 : Vector3.one;
             
             var agent = new Agent
             {
                 Position = position,
                 Rotation = rotation,
-                Scale = scale,
-                TargetPosition = position,
-                Behavior = behavior,
-                Index = i
+                Velocity = Vector3.zero //rotation * Vector3.forward,
             };
             
             _agentsData.Agents.Add(agent);
