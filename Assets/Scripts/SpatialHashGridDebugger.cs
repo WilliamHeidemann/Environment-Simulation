@@ -20,10 +20,15 @@ public class SpatialHashGridDebugger : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        // if (_spatialHashGrid == null)
-        // {
-        //     return;
-        // }
+        if (_spatialHashGrid == null)
+        {
+            return;
+        }
+
+        if (_agentsData.Agents == null)
+        {
+            return;
+        }
         
         Gizmos.color = Color.black;
         var lines = _spatialHashGrid.GetGridLines().ToArray();
@@ -38,10 +43,5 @@ public class SpatialHashGridDebugger : MonoBehaviour
                 Gizmos.DrawLine(agent.Position, nearbyAgent.Position);
             }
         }
-    }
-
-    private void OnValidate()
-    {
-        _spatialHashGrid = new SpatialHashGrid(_cellSize);
     }
 }
