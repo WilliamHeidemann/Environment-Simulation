@@ -1,3 +1,4 @@
+using DataStructures;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -22,7 +23,7 @@ namespace Jobs
             int closeCount = 0;
             for (int i = 0; i < Close.Length; i++)
             {
-                closeCount += Close[i] != default ? 1 : 0;
+                // closeCount += Close[i] != default ? 1 : 0;
             }
             if (closeCount == 0)
             {
@@ -41,7 +42,7 @@ namespace Jobs
             for (var i = 0; i < Close.Length; i++)
             {
                 Edge edge = Close[i];
-                if (edge == default) continue;
+                // if (edge == default) continue;
                 cohesion += edge.EndPosition;
                 alignment += edge.EndForward;
             }
@@ -57,7 +58,7 @@ namespace Jobs
             for (var i = 0; i < TooClose.Length; i++)
             {
                 Edge edge = TooClose[i];
-                if (edge == default) continue;
+                // if (edge == default) continue;
                 separation += edge.SeparationVector.normalized / edge.SquareDistance;
             }
 

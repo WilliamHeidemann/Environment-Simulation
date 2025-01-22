@@ -8,7 +8,7 @@ namespace Jobs
     [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
     public struct TranslateJob : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<Vector3> TargetPositions;
+        [ReadOnly] public NativeArray<Vector3> Velocities;
         [ReadOnly] public NativeArray<float> AgentSpeeds;
         [ReadOnly] public float DeltaTime;
         public NativeArray<Vector3> AgentPositions;
@@ -19,31 +19,36 @@ namespace Jobs
 
         public void Execute(int index)
         {
-            if (AgentSpeeds[index] < 0.1f)
-            {
-                return;
-            }
-        
-            Vector3 direction = TargetPositions[index] - AgentPositions[index];
-            if (direction.sqrMagnitude < 0.1f)
-            {
-                return;
-            }
-
-            Rotate(index, direction);
-            Translate(index, direction);
+            AgentPositions[index] += Velocities[index].normalized * AgentSpeeds[index] * DeltaTime;
+            AgentRotations[index] = Quaternion.LookRotation(Velocities[index]);
+            
+            // if (AgentSpeeds[index] < 0.1f)
+            // {
+            //     return;
+            // }
+            //
+            // Vector3 direction = Velocities[index] - AgentPositions[index];
+            // if (direction.sqrMagnitude < 0.1f)
+            // {
+            //     return;
+            // }
+            //
+            // Rotate(index, direction);
+            // Translate(index, direction);
         }
 
         private void Rotate(int index, Vector3 direction)
         {
             Quaternion destinationRotation = Quaternion.LookRotation(direction);
-            float angle = Quaternion.Angle(AgentRotations[index], destinationRotation);
+            AgentRotations[index] = destinationRotation;
 
-            if (angle > 1f)
-            {
-                AgentRotations[index] =
-                    Quaternion.RotateTowards(AgentRotations[index], destinationRotation, RotationSpeed * DeltaTime);
-            }
+            // float angle = Quaternion.Angle(AgentRotations[index], destinationRotation);
+            //
+            // if (angle > 1f)
+            // {
+            //     AgentRotations[index] =
+            //         Quaternion.RotateTowards(AgentRotations[index], destinationRotation, RotationSpeed * DeltaTime);
+            // }
         }
 
         private void Translate(int index, Vector3 direction)

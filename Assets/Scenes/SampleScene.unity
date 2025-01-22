@@ -526,7 +526,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentRenderer: {fileID: 1395441409}
-  _spawnCount: 1000
+  _spawnCount: 200
   _spawnRadius: 50
 --- !u!114 &1395441409
 MonoBehaviour:
@@ -617,7 +617,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b8f4e30dc39438b88126d9608032575, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dimension: 5
   _cellSize: 4
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
 --- !u!1 &1955650318
