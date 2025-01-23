@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DataStructures;
 using UnityEngine;
 
 public class AgentRenderer : MonoBehaviour
 {
-    [SerializeField] private AgentsData _agentsData;
+    private AgentsData _agentsData;
     [SerializeField] private GameObject _agentPrefab;
 
     private Mesh _combinedMesh;
@@ -18,13 +19,20 @@ public class AgentRenderer : MonoBehaviour
     private static readonly int TransformBuffer = Shader.PropertyToID("transform_buffer");
     private const int CommandCount = 1;
 
+    public void Initialize(AgentsData agentsData)
+    {
+        _agentsData = agentsData;
+        GatherMeshesAndMaterials();
+        SetupShader();
+    }
+    
     private void Update()
     {
         GenerateInstanceMatrices();
         Render();
     }
 
-    public void GatherMeshesAndMaterials()
+    private void GatherMeshesAndMaterials()
     {
         // var combineInstances = CombineInstancesMeshFilters();
         var combineInstances = CombineInstancesSkinnedMeshRenderers();
@@ -67,9 +75,9 @@ public class AgentRenderer : MonoBehaviour
         return combineInstances;
     }
 
-    public void SetupShader()
+    private void SetupShader()
     {
-        _agentTransforms = new Matrix4x4[_agentsData.Transforms.Count];
+        _agentTransforms = new Matrix4x4[_agentsData.Transforms.Length];
         
         _commandBuffer = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, CommandCount,
             GraphicsBuffer.IndirectDrawIndexedArgs.size);
@@ -100,7 +108,6 @@ public class AgentRenderer : MonoBehaviour
         {
             Vector3 position = _agentsData.Transforms[i].Position;
             Quaternion rotation = _agentsData.Transforms[i].Rotation;
-            // Vector3 scale = _agentsData.Agents[i].Scale;
             _agentTransforms[i] = Matrix4x4.TRS(position, rotation, Vector3.one);
         }
 

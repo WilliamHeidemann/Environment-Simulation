@@ -7,10 +7,13 @@ namespace Jobs
 {
     public struct FlockingJob : IJobParallelFor
     {
-        [WriteOnly] public NativeArray<Vector3> Acceleration;
-        [WriteOnly] public NativeArray<float> Speed;
+        // [WriteOnly] public NativeArray<Vector3> Acceleration;
+        // [WriteOnly] public NativeArray<float> Speed;
 
-        [ReadOnly] public NativeArray<Vector3> Positions;
+        // [ReadOnly] public NativeArray<Vector3> Positions;
+        
+        [ReadOnly] public NativeArray<AgentTransform> Transforms;
+        public NativeArray<AgentMotion> Motions;
 
         [ReadOnly] public NativeArray<AgentTransform> Close;
         [ReadOnly] public NativeArray<int> Offset;
@@ -48,8 +51,8 @@ namespace Jobs
             {
                 var edge = new Edge
                 {
-                    SquareDistance = Vector3.SqrMagnitude(Positions[index] - Close[i].Position),
-                    SeparationVector = Positions[index] - Close[i].Position,
+                    SquareDistance = Vector3.SqrMagnitude(Transforms[index].Position - Close[i].Position),
+                    SeparationVector = Transforms[index].Position - Close[i].Position,
                     EndPosition = Close[i].Position,
                     EndForward = Close[i].Rotation * Vector3.forward,
                 };
@@ -64,7 +67,7 @@ namespace Jobs
                 separation += edge.SeparationVector / edge.SquareDistance;
             }
 
-            Speed[index] = closeCount switch
+            var speed = closeCount switch
             {
                 < FewNearbySheep => Fast,
                 < ManyNearbySheep => Medium,
@@ -74,14 +77,13 @@ namespace Jobs
 
             if (closeCount == 0)
             {
-                Acceleration[index] = Vector3.zero;
                 return;
                 // closeCount = 1;
             }
 
             float closeCountInverse = 1f / closeCount;
             centreOfFlock *= closeCountInverse;
-            centreOfFlock -= Positions[index];
+            centreOfFlock -= Transforms[index].Position;
             centreOfFlock *= CohesionStrength;
             alignment *= closeCountInverse;
             alignment *= AlignmentStrength;
@@ -92,7 +94,14 @@ namespace Jobs
             DebugSeparation[index] = separation;
             Vector3 acceleration = (alignment + centreOfFlock + separation) * DeltaTime;
             acceleration = Vector3.ClampMagnitude(acceleration, 3f);
-            Acceleration[index] = acceleration;
+            Vector3 velocity = Motions[index].Velocity + acceleration;
+            velocity = Vector3.ClampMagnitude(velocity, 5f);
+            
+            Motions[index] = new AgentMotion
+            {
+                Speed = speed,
+                Velocity = velocity
+            };
         }
     }
 }

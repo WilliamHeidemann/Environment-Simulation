@@ -525,9 +525,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
-  _agentRenderer: {fileID: 1395441409}
-  _spawnCount: 1000
-  _spawnRadius: 50
+  _spawnCount: 10000
+  _spawnRadius: 100
 --- !u!114 &1395441409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -540,7 +539,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c261f785a48421b852c07c176dc0658, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   _agentPrefab: {fileID: 6517686061769116559, guid: f32fc89859f16ec49bc857008a5ed9c5, type: 3}
   _shader: {fileID: 2100000, guid: 2c75b1a60b3312742b63fc6f97da9a26, type: 2}
 --- !u!114 &1395441410
@@ -555,7 +553,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4995fe63b07b6c41b02a3782db67122, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AgentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
   CohesionStrength: 1
   AlignmentStrength: 3
   SeparationStrength: 3

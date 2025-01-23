@@ -1,10 +1,12 @@
-using System.Collections.Generic;
-using DataStructures;
+using Unity.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Create AgentsData", fileName = "AgentsData", order = 0)]
-public class AgentsData : ScriptableObject
+namespace DataStructures
 {
-    public List<AgentTransform> Transforms;
-    public List<AgentMotion> Motions;
+    [CreateAssetMenu(menuName = "Create AgentsData", fileName = "AgentsData", order = 0)]
+    public class AgentsData : ScriptableObject
+    {
+        public NativeArray<AgentTransform> Transforms;
+        public NativeArray<AgentMotion> Motions;
+    }
 }
