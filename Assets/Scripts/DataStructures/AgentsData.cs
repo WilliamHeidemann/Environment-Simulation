@@ -5,5 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Create AgentsData", fileName = "AgentsData", order = 0)]
 public class AgentsData : ScriptableObject
 {
-    public List<Agent> Agents;
+    public List<AgentTransform> Transforms;
+    public List<AgentMotion> Motions;
 }

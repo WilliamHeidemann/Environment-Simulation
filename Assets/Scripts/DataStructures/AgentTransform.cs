@@ -2,11 +2,15 @@ using UnityEngine;
 
 namespace DataStructures
 {
-    public class Agent
+    public struct AgentTransform
     {
         public Vector3 Position;
         public Quaternion Rotation;
-        public Vector3 Velocity;
+    }
+    
+    public struct AgentMotion
+    {
         public float Speed;
+        public Vector3 Velocity;
     }
 }

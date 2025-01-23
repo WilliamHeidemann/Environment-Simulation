@@ -14,21 +14,28 @@ public class AgentSpawner : MonoBehaviour
 
     private void Start()
     {
-        _agentsData.Agents = new List<Agent>();
+        _agentsData.Transforms = new List<AgentTransform>();
+        _agentsData.Motions = new List<AgentMotion>();
         Random.InitState(0);
         for (int i = 0; i < _spawnCount; i++)
         {
             Vector3 position = Utility.RandomInCircle(_spawnRadius);
             Quaternion rotation = Quaternion.LookRotation(Utility.RandomOnCircle());
             
-            var agent = new Agent
+            var agentTransform = new AgentTransform
             {
                 Position = position,
                 Rotation = rotation,
-                Velocity = Vector3.zero //rotation * Vector3.forward,
             };
             
-            _agentsData.Agents.Add(agent);
+            var agentMotion = new AgentMotion
+            {
+                Speed = 0f,
+                Velocity = Vector3.zero
+            };
+            
+            _agentsData.Transforms.Add(agentTransform);
+            _agentsData.Motions.Add(agentMotion);
         }
 
         _agentRenderer.GatherMeshesAndMaterials();

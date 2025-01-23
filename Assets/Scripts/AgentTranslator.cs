@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using DataStructures;
 using Jobs;
 using Unity.Collections;
 using Unity.Jobs;
@@ -18,7 +19,7 @@ public class AgentTranslator : MonoBehaviour
 
     private void Start()
     {
-        var agents = _agentsData.Agents;
+        var agents = _agentsData.Transforms;
         _velocities = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
         _agentSpeeds = new NativeArray<float>(agents.Count, Allocator.Persistent);
         _agentPositions = new NativeArray<Vector3>(agents.Count, Allocator.Persistent);
@@ -27,14 +28,15 @@ public class AgentTranslator : MonoBehaviour
 
     private void Update()
     {
-        var agents = _agentsData.Agents;
+        var transforms = _agentsData.Transforms;
+        var motions = _agentsData.Motions;
 
-        for (int i = 0; i < agents.Count; i++)
+        for (int i = 0; i < transforms.Count; i++)
         {
-            _velocities[i] = agents[i].Velocity;
-            _agentSpeeds[i] = agents[i].Speed;
-            _agentPositions[i] = agents[i].Position;
-            _agentRotations[i] = agents[i].Rotation;
+            _agentPositions[i] = transforms[i].Position;
+            _agentRotations[i] = transforms[i].Rotation;
+            _velocities[i] = motions[i].Velocity;
+            _agentSpeeds[i] = motions[i].Speed;
         }
 
         var job = new TranslateJob
@@ -46,12 +48,15 @@ public class AgentTranslator : MonoBehaviour
             DeltaTime = Time.deltaTime
         };
 
-        job.Schedule(agents.Count, 1).Complete();
+        job.Schedule(transforms.Count, 1).Complete();
 
-        for (int i = 0; i < agents.Count; i++)
+        for (int i = 0; i < transforms.Count; i++)
         {
-            agents[i].Position = _agentPositions[i];
-            agents[i].Rotation = _agentRotations[i];
+            transforms[i] = new AgentTransform
+            {
+                Position = _agentPositions[i],
+                Rotation = _agentRotations[i]
+            };
         }
     }
 

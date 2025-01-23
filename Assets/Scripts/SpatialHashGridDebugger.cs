@@ -17,10 +17,12 @@ public class SpatialHashGridDebugger : MonoBehaviour
 
     private void Update()
     {
-        foreach (var agent in _agentsData.Agents)
+        _spatialHashGrid.Clear();
+        foreach (var agent in _agentsData.Transforms)
         {
             _spatialHashGrid.Set(agent);
         }
+        _spatialHashGrid.Solidify();
     }
 
     private void OnDrawGizmos()
@@ -30,7 +32,7 @@ public class SpatialHashGridDebugger : MonoBehaviour
             return;
         }
 
-        if (_agentsData.Agents == null)
+        if (_agentsData.Transforms == null)
         {
             return;
         }
@@ -40,9 +42,9 @@ public class SpatialHashGridDebugger : MonoBehaviour
         Gizmos.DrawLineList(lines);
         
         Gizmos.color = Color.red;
-        foreach (var agent in _agentsData.Agents)
+        foreach (var agent in _agentsData.Transforms)
         {
-            var nearbyAgents = _spatialHashGrid.GetNearby(agent);
+            var nearbyAgents = _spatialHashGrid.GetNearby(agent.Position);
             foreach (var nearbyAgent in nearbyAgents)
             {
                 Gizmos.DrawLine(agent.Position, nearbyAgent.Position);

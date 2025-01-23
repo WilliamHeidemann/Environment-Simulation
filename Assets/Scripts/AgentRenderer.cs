@@ -69,7 +69,7 @@ public class AgentRenderer : MonoBehaviour
 
     public void SetupShader()
     {
-        _agentTransforms = new Matrix4x4[_agentsData.Agents.Count];
+        _agentTransforms = new Matrix4x4[_agentsData.Transforms.Count];
         
         _commandBuffer = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, CommandCount,
             GraphicsBuffer.IndirectDrawIndexedArgs.size);
@@ -98,8 +98,8 @@ public class AgentRenderer : MonoBehaviour
     {
         for (int i = 0; i < _agentTransforms.Length; i++)
         {
-            Vector3 position = _agentsData.Agents[i].Position;
-            Quaternion rotation = _agentsData.Agents[i].Rotation;
+            Vector3 position = _agentsData.Transforms[i].Position;
+            Quaternion rotation = _agentsData.Transforms[i].Rotation;
             // Vector3 scale = _agentsData.Agents[i].Scale;
             _agentTransforms[i] = Matrix4x4.TRS(position, rotation, Vector3.one);
         }
