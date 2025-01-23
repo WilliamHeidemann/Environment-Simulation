@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using DataStructures;
 using Jobs;
@@ -29,7 +30,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             Acceleration = accelerations,
             Speed = new NativeArray<float>(count, Allocator.Persistent),
             Positions = new NativeArray<Vector3>(count, Allocator.Persistent),
-            Close = new NativeArray<Edge>(count * 100, Allocator.Persistent),
+            Close = new NativeArray<AgentTransform>(count * 100, Allocator.Persistent),
             Offset = new NativeArray<int>(count, Allocator.Persistent),
             Lengths = new NativeArray<int>(count, Allocator.Persistent),
             CohesionStrength = CohesionStrength,
@@ -57,38 +58,16 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             AgentTransform agentTransform = AgentsData.Transforms[i];
             
             _flockingJob.Positions[i] = agentTransform.Position;
-
-            // var nearby = _spatialHashGrid.GetNearby(agent)
-            //     .Select(agent2 => new Edge
-            //     {
-            //         SquareDistance = Vector3.SqrMagnitude(agent.Position - agent2.Position),
-            //         SeparationVector = agent.Position - agent2.Position,
-            //         EndPosition = agent2.Position,
-            //         EndForward = agent2.Rotation * Vector3.forward,
-            //     }).ToArray();
-
-            var nearbyAgents = _spatialHashGrid.GetNearby(agentTransform.Position);
-            var nearby = new Edge[nearbyAgents.Count];
-            for (int j = 0; j < nearbyAgents.Count; j++)
-            {
-                AgentTransform agent2 = nearbyAgents[j];
-                nearby[j] = new Edge
-                {
-                    SquareDistance = Vector3.SqrMagnitude(agentTransform.Position - agent2.Position),
-                    SeparationVector = agentTransform.Position - agent2.Position,
-                    EndPosition = agent2.Position,
-                    EndForward = agent2.Rotation * Vector3.forward,
-                };
-            }
+            List<AgentTransform> nearbyAgents = _spatialHashGrid.GetNearby(agentTransform.Position);
 
             _flockingJob.Offset[i] = offset;
-            for (int j = 0; j < nearby.Length; j++)
+            for (int j = 0; j < nearbyAgents.Count; j++)
             {
-                _flockingJob.Close[j + offset] = nearby[j];
+                _flockingJob.Close[j + offset] = nearbyAgents[j];
             }
 
-            offset += nearby.Length;
-            _flockingJob.Lengths[i] = nearby.Length;
+            offset += nearbyAgents.Count;
+            _flockingJob.Lengths[i] = nearbyAgents.Count;
         }
 
         _flockingJob.DeltaTime = Time.deltaTime;
