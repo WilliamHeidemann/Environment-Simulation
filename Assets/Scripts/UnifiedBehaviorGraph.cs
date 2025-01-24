@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DataStructures;
 using Jobs;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -18,24 +19,20 @@ public class UnifiedBehaviorGraph : MonoBehaviour
     private FlockingJob _flockingJob;
     private int _count;
 
-    private SpatialHashGrid _spatialHashGrid;
+    private NativeSpatialHashGrid _spatialHashGrid;
 
     public void Initialize(AgentsData agentsData)
     {
         _agentsData = agentsData;
         _count = agentsData.Transforms.Length;
-        _spatialHashGrid = new SpatialHashGrid(4);
+        _spatialHashGrid = new NativeSpatialHashGrid(100, Allocator.Persistent);
 
         _flockingJob = new FlockingJob
         {
             Transforms = agentsData.Transforms,
             Motions = agentsData.Motions,
             
-            Close = new NativeArray<AgentTransform>(_count * 100, Allocator.Persistent),
-            Offset = new NativeArray<int>(_count, Allocator.Persistent),
-            Lengths = new NativeArray<int>(_count, Allocator.Persistent),
-            
-            SpatialHashGrid = new NativeSpatialHashGrid(100, Allocator.Persistent),
+            SpatialHashGrid = _spatialHashGrid,
             
             CohesionStrength = CohesionStrength,
             AlignmentStrength = AlignmentStrength,
@@ -53,21 +50,7 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         _flockingJob.SeparationStrength = SeparationStrength;
 
         UpdateSpatialHashGrid();
-
-        int offset = 0;
-        for (int i = 0; i < _count; i++)
-        {
-            AgentTransform agentTransform = _agentsData.Transforms[i];
-            List<AgentTransform> nearbyAgents = _spatialHashGrid.GetNearby(agentTransform.Position);
-            _flockingJob.Offset[i] = offset;
-            _flockingJob.Lengths[i] = nearbyAgents.Count;
-            for (int j = 0; j < nearbyAgents.Count; j++)
-            {
-                _flockingJob.Close[j + offset] = nearbyAgents[j];
-            }
-            offset += nearbyAgents.Count;
-        }
-
+        
         _flockingJob.DeltaTime = Time.deltaTime;
         _flockingJob.Schedule(_count, 1).Complete();
     }
@@ -75,20 +58,14 @@ public class UnifiedBehaviorGraph : MonoBehaviour
     private void UpdateSpatialHashGrid()
     {
         _spatialHashGrid.Clear();
-        for (int i = 0; i < _agentsData.Transforms.Length; i++)
+        for (int i = 0; i < _count; i++)
         {
-            AgentTransform agentTransform = _agentsData.Transforms[i];
-            _spatialHashGrid.Set(agentTransform);
+            _spatialHashGrid.Set(_agentsData.Transforms[i]);
         }
-        _spatialHashGrid.Solidify();
     }
 
     private void OnDestroy()
     {
-        _flockingJob.Close.Dispose();
-        _flockingJob.Offset.Dispose();
-        _flockingJob.Lengths.Dispose();
-        
         _flockingJob.DebugCentreOfFlock.Dispose();
         _flockingJob.DebugAlignment.Dispose();
         _flockingJob.DebugSeparation.Dispose();

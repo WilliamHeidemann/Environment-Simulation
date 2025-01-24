@@ -12,10 +12,6 @@ namespace Jobs
         [ReadOnly] public NativeArray<AgentTransform> Transforms;
         public NativeArray<AgentMotion> Motions;
 
-        [ReadOnly] public NativeArray<AgentTransform> Close;
-        [ReadOnly] public NativeArray<int> Offset;
-        [ReadOnly] public NativeArray<int> Lengths;
-        
         [ReadOnly] public NativeSpatialHashGrid SpatialHashGrid;
 
         [ReadOnly] public float CohesionStrength;
@@ -43,30 +39,32 @@ namespace Jobs
             Vector3 alignment = Vector3.zero;
             Vector3 separation = Vector3.zero;
 
-            int start = Offset[index];
-            int end = start + Lengths[index];
             int closeCount = 0;
-            for (var i = start; i < end; i++)
+            NativeList<AgentTransform> neighbors = new NativeList<AgentTransform>(100, Allocator.TempJob);
+            SpatialHashGrid.QueryNeighbors(Transforms[index].Position, ref neighbors);
+            for (var i = 0; i < neighbors.Length; i++)
             {
+                AgentTransform nearbyAgent = neighbors[i];
                 var edge = new Edge
                 {
-                    SquareDistance = Vector3.SqrMagnitude(Transforms[index].Position - Close[i].Position),
-                    SeparationVector = Transforms[index].Position - Close[i].Position,
-                    EndPosition = Close[i].Position,
-                    EndForward = Close[i].Rotation * Vector3.forward,
+                    SquareDistance = Vector3.SqrMagnitude(Transforms[index].Position - nearbyAgent.Position),
+                    SeparationVector = Transforms[index].Position - nearbyAgent.Position,
+                    EndPosition = nearbyAgent.Position,
+                    EndForward = nearbyAgent.Rotation * Vector3.forward,
                 };
-                
-                if (edge.SquareDistance is > CohesionSquareThreshold or 0f) continue;
 
+                if (edge.SquareDistance is > CohesionSquareThreshold or 0f) continue;
                 closeCount++;
                 centreOfFlock += edge.EndPosition;
                 alignment += edge.EndForward;
 
-                if (edge.SquareDistance is > SeparationSquareThreshold or 0f) continue;
+                if (edge.SquareDistance > SeparationSquareThreshold) continue;
                 separation += edge.SeparationVector / edge.SquareDistance;
             }
 
-            var speed = closeCount switch
+            neighbors.Dispose();
+
+            float speed = closeCount switch
             {
                 < FewNearbySheep => Fast,
                 < ManyNearbySheep => Medium,
@@ -77,7 +75,6 @@ namespace Jobs
             if (closeCount == 0)
             {
                 return;
-                // closeCount = 1;
             }
 
             float closeCountInverse = 1f / closeCount;
@@ -95,7 +92,7 @@ namespace Jobs
             acceleration = Vector3.ClampMagnitude(acceleration, 3f);
             Vector3 velocity = Motions[index].Velocity + acceleration;
             velocity = Vector3.ClampMagnitude(velocity, 5f);
-            
+
             Motions[index] = new AgentMotion
             {
                 Speed = speed,
@@ -106,37 +103,27 @@ namespace Jobs
 }
 
 public struct NativeSpatialHashGrid : IDisposable
-{ 
+{
     private NativeParallelMultiHashMap<Vector2Int, AgentTransform> _grid;
-    private NativeHashMap<AgentTransform, Vector2Int> _agentToCell;
-    
     private const int CellSize = 4;
 
     public NativeSpatialHashGrid(int initialCapacity, Allocator allocator)
     {
         _grid = new NativeParallelMultiHashMap<Vector2Int, AgentTransform>(initialCapacity, allocator);
-        _agentToCell = new NativeHashMap<AgentTransform, Vector2Int>(initialCapacity, allocator);
     }
     
+    public void Clear()
+    {
+        _grid.Clear();
+    }
+
     public void Set(AgentTransform transform)
     {
         Vector2Int cell = GetCell(transform.Position);
-        
-        if (_agentToCell.TryGetValue(transform, out Vector2Int previousCell))
-        {
-            if (previousCell == cell)
-            {
-                return;
-            }
-
-            _grid.Remove(previousCell, transform);
-        }
-        
         _grid.Add(cell, transform);
-        _agentToCell[transform] = cell;
     }
-
-    public IEnumerable<AgentTransform> QueryNeighbors(Vector3 position)
+    
+    public void QueryNeighbors(Vector3 position, ref NativeList<AgentTransform> transforms)
     {
         Vector2Int centerCell = GetCell(position);
         for (int y = -1; y <= 1; y++)
@@ -144,34 +131,31 @@ public struct NativeSpatialHashGrid : IDisposable
             for (int x = -1; x <= 1; x++)
             {
                 var cell = new Vector2Int(centerCell.x + x, centerCell.y + y);
-                foreach (AgentTransform transform in QuerySingleCell(cell))
-                {
-                    yield return transform;
-                }
+                QuerySingleCell(cell, ref transforms);
             }
         }
     }
 
-    private IEnumerable<AgentTransform> QuerySingleCell(Vector2Int cell)
+    private void QuerySingleCell(Vector2Int cell, ref NativeList<AgentTransform> neighbors)
     {
         if (!_grid.ContainsKey(cell))
         {
-            yield break;
+            return;
         }
+
         foreach (AgentTransform transform in _grid.GetValuesForKey(cell))
         {
-            yield return transform;
+            neighbors.Add(transform);
         }
     }
-    
-    
+
     private static Vector2Int GetCell(Vector3 position)
     {
         int x = Mathf.FloorToInt(position.x / CellSize);
         int y = Mathf.FloorToInt(position.z / CellSize);
         return new Vector2Int(x, y);
     }
-    
+
     public void Dispose()
     {
         _grid.Dispose();
