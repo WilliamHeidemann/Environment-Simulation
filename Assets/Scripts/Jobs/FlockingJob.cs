@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using DataStructures;
 using Unity.Collections;
 using Unity.Jobs;
@@ -7,17 +9,14 @@ namespace Jobs
 {
     public struct FlockingJob : IJobParallelFor
     {
-        // [WriteOnly] public NativeArray<Vector3> Acceleration;
-        // [WriteOnly] public NativeArray<float> Speed;
-
-        // [ReadOnly] public NativeArray<Vector3> Positions;
-        
         [ReadOnly] public NativeArray<AgentTransform> Transforms;
         public NativeArray<AgentMotion> Motions;
 
         [ReadOnly] public NativeArray<AgentTransform> Close;
         [ReadOnly] public NativeArray<int> Offset;
         [ReadOnly] public NativeArray<int> Lengths;
+        
+        [ReadOnly] public NativeSpatialHashGrid SpatialHashGrid;
 
         [ReadOnly] public float CohesionStrength;
         [ReadOnly] public float AlignmentStrength;
@@ -103,5 +102,78 @@ namespace Jobs
                 Velocity = velocity
             };
         }
+    }
+}
+
+public struct NativeSpatialHashGrid : IDisposable
+{ 
+    private NativeParallelMultiHashMap<Vector2Int, AgentTransform> _grid;
+    private NativeHashMap<AgentTransform, Vector2Int> _agentToCell;
+    
+    private const int CellSize = 4;
+
+    public NativeSpatialHashGrid(int initialCapacity, Allocator allocator)
+    {
+        _grid = new NativeParallelMultiHashMap<Vector2Int, AgentTransform>(initialCapacity, allocator);
+        _agentToCell = new NativeHashMap<AgentTransform, Vector2Int>(initialCapacity, allocator);
+    }
+    
+    public void Set(AgentTransform transform)
+    {
+        Vector2Int cell = GetCell(transform.Position);
+        
+        if (_agentToCell.TryGetValue(transform, out Vector2Int previousCell))
+        {
+            if (previousCell == cell)
+            {
+                return;
+            }
+
+            _grid.Remove(previousCell, transform);
+        }
+        
+        _grid.Add(cell, transform);
+        _agentToCell[transform] = cell;
+    }
+
+    public IEnumerable<AgentTransform> QueryNeighbors(Vector3 position)
+    {
+        Vector2Int centerCell = GetCell(position);
+        for (int y = -1; y <= 1; y++)
+        {
+            for (int x = -1; x <= 1; x++)
+            {
+                var cell = new Vector2Int(centerCell.x + x, centerCell.y + y);
+                foreach (AgentTransform transform in QuerySingleCell(cell))
+                {
+                    yield return transform;
+                }
+            }
+        }
+    }
+
+    private IEnumerable<AgentTransform> QuerySingleCell(Vector2Int cell)
+    {
+        if (!_grid.ContainsKey(cell))
+        {
+            yield break;
+        }
+        foreach (AgentTransform transform in _grid.GetValuesForKey(cell))
+        {
+            yield return transform;
+        }
+    }
+    
+    
+    private static Vector2Int GetCell(Vector3 position)
+    {
+        int x = Mathf.FloorToInt(position.x / CellSize);
+        int y = Mathf.FloorToInt(position.z / CellSize);
+        return new Vector2Int(x, y);
+    }
+    
+    public void Dispose()
+    {
+        _grid.Dispose();
     }
 }

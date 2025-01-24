@@ -34,6 +34,9 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             Close = new NativeArray<AgentTransform>(_count * 100, Allocator.Persistent),
             Offset = new NativeArray<int>(_count, Allocator.Persistent),
             Lengths = new NativeArray<int>(_count, Allocator.Persistent),
+            
+            SpatialHashGrid = new NativeSpatialHashGrid(100, Allocator.Persistent),
+            
             CohesionStrength = CohesionStrength,
             AlignmentStrength = AlignmentStrength,
             SeparationStrength = SeparationStrength,
@@ -89,6 +92,8 @@ public class UnifiedBehaviorGraph : MonoBehaviour
         _flockingJob.DebugCentreOfFlock.Dispose();
         _flockingJob.DebugAlignment.Dispose();
         _flockingJob.DebugSeparation.Dispose();
+        
+        _flockingJob.SpatialHashGrid.Dispose();
     }
 
     private void OnDrawGizmos()
