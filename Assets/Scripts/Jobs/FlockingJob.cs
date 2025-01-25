@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using DataStructures;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 namespace Jobs
 {
+    [BurstCompile(FloatPrecision.Low, FloatMode.Fast)]
     public struct FlockingJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<AgentTransform> Transforms;
