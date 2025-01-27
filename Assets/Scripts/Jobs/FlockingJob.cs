@@ -3,6 +3,7 @@ using DataStructures;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Jobs
@@ -20,9 +21,9 @@ namespace Jobs
         [ReadOnly] public float SeparationStrength;
         [ReadOnly] public float DeltaTime;
 
-        [WriteOnly] public NativeArray<Vector3> DebugCentreOfFlock;
-        [WriteOnly] public NativeArray<Vector3> DebugAlignment;
-        [WriteOnly] public NativeArray<Vector3> DebugSeparation;
+        // [WriteOnly] public NativeArray<Vector3> DebugCentreOfFlock;
+        // [WriteOnly] public NativeArray<Vector3> DebugAlignment;
+        // [WriteOnly] public NativeArray<Vector3> DebugSeparation;
 
         private const float Fast = 3f;
         private const float Medium = 1f;
@@ -36,9 +37,9 @@ namespace Jobs
 
         public void Execute(int index)
         {
-            Vector3 centreOfFlock = Vector3.zero;
-            Vector3 alignment = Vector3.zero;
-            Vector3 separation = Vector3.zero;
+            float3 centreOfFlock = float3.zero;
+            float3 alignment = float3.zero;
+            float3 separation = float3.zero;
 
             int closeCount = 0;
             NativeList<AgentTransform> neighbors = new NativeList<AgentTransform>(100, Allocator.TempJob);
@@ -48,10 +49,10 @@ namespace Jobs
                 AgentTransform nearbyAgent = neighbors[i];
                 var edge = new Edge
                 {
-                    SquareDistance = Vector3.SqrMagnitude(Transforms[index].Position - nearbyAgent.Position),
+                    SquareDistance = math.lengthsq(Transforms[index].Position - nearbyAgent.Position),
                     SeparationVector = Transforms[index].Position - nearbyAgent.Position,
                     EndPosition = nearbyAgent.Position,
-                    EndForward = nearbyAgent.Rotation * Vector3.forward,
+                    EndForward = math.mul(nearbyAgent.Rotation, new float3(0, 0, 1))
                 };
 
                 if (edge.SquareDistance is > CohesionSquareThreshold or 0f) continue;
@@ -86,13 +87,21 @@ namespace Jobs
             alignment *= AlignmentStrength;
             separation *= SeparationStrength;
 
-            DebugCentreOfFlock[index] = centreOfFlock;
-            DebugAlignment[index] = alignment;
-            DebugSeparation[index] = separation;
-            Vector3 acceleration = (alignment + centreOfFlock + separation) * DeltaTime;
-            acceleration = Vector3.ClampMagnitude(acceleration, 3f);
-            Vector3 velocity = Motions[index].Velocity + acceleration;
-            velocity = Vector3.ClampMagnitude(velocity, 5f);
+            // DebugCentreOfFlock[index] = centreOfFlock;
+            // DebugAlignment[index] = alignment;
+            // DebugSeparation[index] = separation;
+            float3 acceleration = (alignment + centreOfFlock + separation) * DeltaTime;
+            float squaredAccelerationMagnitude = math.lengthsq(acceleration);
+            if (squaredAccelerationMagnitude > 9f)
+            {
+                acceleration = math.normalize(acceleration) * 3f;
+            }
+            float3 velocity = Motions[index].Velocity + acceleration;
+            float squaredVelocityMagnitude = math.lengthsq(velocity);
+            if (squaredVelocityMagnitude > 25f)
+            {
+                velocity = math.normalize(velocity) * 5f;
+            }
 
             Motions[index] = new AgentMotion
             {

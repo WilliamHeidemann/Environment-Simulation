@@ -1,4 +1,5 @@
 using System;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace DataStructures
@@ -6,8 +7,8 @@ namespace DataStructures
     public struct Edge
     {
         public float SquareDistance;
-        public Vector3 SeparationVector;
-        public Vector3 EndPosition;
-        public Vector3 EndForward;
+        public float3 SeparationVector;
+        public float3 EndPosition;
+        public float3 EndForward;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DataStructures;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class AgentRenderer : MonoBehaviour
@@ -107,7 +108,7 @@ public class AgentRenderer : MonoBehaviour
         for (int i = 0; i < _agentTransforms.Length; i++)
         {
             Vector3 position = _agentsData.Transforms[i].Position;
-            Quaternion rotation = _agentsData.Transforms[i].Rotation;
+            quaternion rotation = _agentsData.Transforms[i].Rotation;
             _agentTransforms[i] = Matrix4x4.TRS(position, rotation, Vector3.one);
         }
 

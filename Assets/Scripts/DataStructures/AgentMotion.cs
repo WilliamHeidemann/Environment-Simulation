@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace DataStructures
@@ -5,6 +6,6 @@ namespace DataStructures
     public struct AgentMotion
     {
         public float Speed;
-        public Vector3 Velocity;
+        public float3 Velocity;
     }
 }

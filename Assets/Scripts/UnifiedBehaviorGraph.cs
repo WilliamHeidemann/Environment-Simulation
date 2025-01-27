@@ -37,9 +37,9 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             CohesionStrength = CohesionStrength,
             AlignmentStrength = AlignmentStrength,
             SeparationStrength = SeparationStrength,
-            DebugCentreOfFlock = new NativeArray<Vector3>(_count, Allocator.Persistent),
-            DebugAlignment = new NativeArray<Vector3>(_count, Allocator.Persistent),
-            DebugSeparation = new NativeArray<Vector3>(_count, Allocator.Persistent),
+            // DebugCentreOfFlock = new NativeArray<Vector3>(_count, Allocator.Persistent),
+            // DebugAlignment = new NativeArray<Vector3>(_count, Allocator.Persistent),
+            // DebugSeparation = new NativeArray<Vector3>(_count, Allocator.Persistent),
         };
     }
 
@@ -66,9 +66,9 @@ public class UnifiedBehaviorGraph : MonoBehaviour
 
     private void OnDestroy()
     {
-        _flockingJob.DebugCentreOfFlock.Dispose();
-        _flockingJob.DebugAlignment.Dispose();
-        _flockingJob.DebugSeparation.Dispose();
+        // _flockingJob.DebugCentreOfFlock.Dispose();
+        // _flockingJob.DebugAlignment.Dispose();
+        // _flockingJob.DebugSeparation.Dispose();
         
         _flockingJob.SpatialHashGrid.Dispose();
     }
@@ -85,20 +85,20 @@ public class UnifiedBehaviorGraph : MonoBehaviour
             Gizmos.DrawCube(agentTransform.Position + motion.Velocity, Vector3.one * 0.4f);
         }
 
-        for (int i = 0; i < _agentsData.Transforms.Length; i++)
-        {
-            AgentTransform agentTransform = _agentsData.Transforms[i];
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugCentreOfFlock[i]);
-            Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugCentreOfFlock[i], Vector3.one * 0.4f);
-            
-            Gizmos.color = Color.gray;
-            Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugAlignment[i]);
-            Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugAlignment[i], Vector3.one * 0.4f);
-            
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugSeparation[i]);
-            Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugSeparation[i], Vector3.one * 0.4f);
-        }
+        // for (int i = 0; i < _agentsData.Transforms.Length; i++)
+        // {
+        //     AgentTransform agentTransform = _agentsData.Transforms[i];
+        //     Gizmos.color = Color.cyan;
+        //     Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugCentreOfFlock[i]);
+        //     Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugCentreOfFlock[i], Vector3.one * 0.4f);
+        //     
+        //     Gizmos.color = Color.gray;
+        //     Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugAlignment[i]);
+        //     Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugAlignment[i], Vector3.one * 0.4f);
+        //     
+        //     Gizmos.color = Color.magenta;
+        //     Gizmos.DrawLine(agentTransform.Position, agentTransform.Position + _flockingJob.DebugSeparation[i]);
+        //     Gizmos.DrawCube(agentTransform.Position + _flockingJob.DebugSeparation[i], Vector3.one * 0.4f);
+        // }
     }
 }
