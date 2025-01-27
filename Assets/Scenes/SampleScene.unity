@@ -422,7 +422,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _agentsData: {fileID: 11400000, guid: c669494d644ee2643b9b4b3e1ef1c923, type: 2}
-  _spawnCount: 10000
+  _spawnCount: 15000
   _spawnRadius: 80
 --- !u!114 &1395441409
 MonoBehaviour:
