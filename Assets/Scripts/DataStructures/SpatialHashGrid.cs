@@ -1,21 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using DataStructures;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace DataStructures
 {
     public class SpatialHashGrid
     {
-        private readonly Dictionary<Vector2Int, HashSet<AgentTransform>> _grid;
-        private readonly Dictionary<Vector2Int, List<AgentTransform>> _solidifiedGrid;
+        private readonly Dictionary<int2, HashSet<AgentTransform>> _grid;
+        private readonly Dictionary<int2, List<AgentTransform>> _solidifiedGrid;
         private readonly int _cellSize;
 
         public SpatialHashGrid(int cellSize)
         {
             _cellSize = cellSize;
-            _grid = new Dictionary<Vector2Int, HashSet<AgentTransform>>();
-            _solidifiedGrid = new Dictionary<Vector2Int, List<AgentTransform>>();
+            _grid = new Dictionary<int2, HashSet<AgentTransform>>();
+            _solidifiedGrid = new Dictionary<int2, List<AgentTransform>>();
         }
 
         public void Clear()
@@ -26,7 +27,7 @@ namespace DataStructures
 
         public void Set(AgentTransform agentTransform)
         {
-            Vector2Int cell = GetCell(agentTransform.Position);
+            int2 cell = GetCell(agentTransform.Position);
 
             if (!_grid.ContainsKey(cell))
             {
@@ -38,7 +39,7 @@ namespace DataStructures
 
         public void Solidify()
         {
-            foreach ((Vector2Int cell, HashSet<AgentTransform> agents) in _grid)
+            foreach ((int2 cell, HashSet<AgentTransform> agents) in _grid)
             {
                 if (agents.Count == 0) continue;
 
@@ -46,7 +47,7 @@ namespace DataStructures
                 {
                     for (int x = -1; x <= 1; x++)
                     {
-                        Vector2Int neighborCell = cell + new Vector2Int(x, y);
+                        int2 neighborCell = cell + new int2(x, y);
 
                         if (!_solidifiedGrid.ContainsKey(neighborCell))
                         {
@@ -59,9 +60,9 @@ namespace DataStructures
             }
         }
 
-        public List<AgentTransform> GetNearby(Vector3 position)
+        public List<AgentTransform> GetNearby(float3 position)
         {
-            Vector2Int cell = GetCell(position);
+            int2 cell = GetCell(position);
             if (!_solidifiedGrid.TryGetValue(cell, out var agents))
             {
                 return new List<AgentTransform>();
@@ -70,27 +71,29 @@ namespace DataStructures
             return agents;
         }
 
-        public IEnumerable<Vector3> GetGridLines() =>
+        public Vector3[] GetGridLines() =>
             _grid.Keys.Where(key => _grid[key].Count > 0)
-                .SelectMany(GetCellOutline);
+                .SelectMany(GetCellOutline)
+                .Select(f3 => new Vector3(f3.x, f3.y, f3.z))
+                .ToArray();
 
-        private IEnumerable<Vector3> GetCellOutline(Vector2Int cell)
+        private IEnumerable<float3> GetCellOutline(int2 cell)
         {
-            yield return new Vector3(cell.x * _cellSize, 0.1f, cell.y * _cellSize);
-            yield return new Vector3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize);
-            yield return new Vector3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize);
-            yield return new Vector3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
-            yield return new Vector3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
-            yield return new Vector3(cell.x * _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
-            yield return new Vector3(cell.x * _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
-            yield return new Vector3(cell.x * _cellSize, 0.1f, cell.y * _cellSize);
+            yield return new float3(cell.x * _cellSize, 0.1f, cell.y * _cellSize);
+            yield return new float3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize);
+            yield return new float3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize);
+            yield return new float3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
+            yield return new float3(cell.x * _cellSize + _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
+            yield return new float3(cell.x * _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
+            yield return new float3(cell.x * _cellSize, 0.1f, cell.y * _cellSize + _cellSize);
+            yield return new float3(cell.x * _cellSize, 0.1f, cell.y * _cellSize);
         }
 
-        private Vector2Int GetCell(Vector3 position)
+        private int2 GetCell(float3 position)
         {
             int x = Mathf.FloorToInt(position.x / _cellSize);
             int y = Mathf.FloorToInt(position.z / _cellSize);
-            return new Vector2Int(x, y);
+            return new int2(x, y);
         }
     }
 }
