@@ -21,6 +21,8 @@ public class AgentSpawner : MonoBehaviour
         {
             Vector3 position = Utility.RandomInCircle(_spawnRadius);
             Quaternion rotation = Quaternion.LookRotation(Utility.RandomOnCircle());
+            // Vector3 position = new Vector3(i % 3, 0, i % 3 + (i / 3f) * 2);
+            // Quaternion rotation = Quaternion.identity;
 
             _agentsData.Transforms[i] = new AgentTransform
             {
@@ -34,7 +36,7 @@ public class AgentSpawner : MonoBehaviour
                 Velocity = Vector3.zero
             };
         }
-        
+
         GetComponent<AgentRenderer>().Initialize(_agentsData);
         GetComponent<AgentTranslator>().Initialize(_agentsData);
         GetComponent<UnifiedBehaviorGraph>().Initialize(_agentsData);

@@ -54,6 +54,14 @@ namespace Jobs
                     EndForward = nearbyAgent.Rotation * Vector3.forward,
                 };
 
+                // To check if the sheep is in front of the player
+                // Calculate if the dot product between the sheeps forward vector is > 0 (or higher to view in a cone)
+                // in relation to the sheep contained in the edge. 
+                // continue; if the sheep is behind. 
+                // float dotProduct = Vector3.Dot(Transforms[index].Rotation * Vector3.forward, -edge.SeparationVector);
+                // if (dotProduct < 0f) continue;
+                // if (dotProduct < -0.55) continue;
+                
                 if (edge.SquareDistance is > CohesionSquareThreshold or 0f) continue;
                 closeCount++;
                 centreOfFlock += edge.EndPosition;
